@@ -35,9 +35,13 @@
 
 ## 4. 核心功能开发 (In Progress)
 
-- [ ] **Data Persistence (Next Step)**
-  - [ ] Initialize SQLite database (`storage/database.rs`)
-  - [ ] Define schemas for `projects`, `emails`, `threads`, `artifacts`
+- [x] **Data Persistence (DB Init)**
+  - [x] Initialize SQLite database (`storage/database.rs`)
+  - [x] Define schemas for `projects`, `emails`, `threads`, `artifacts`
+  - [x] Seed Mock Data
+- [ ] **Frontend <-> Backend Integration**
+  - [ ] Rust: Implement `list_projects` command with DB query
+  - [ ] Frontend: Replace mock data with `invoke('list_projects')` in `ProjectsPage`
 - [ ] **Mail Synchronization**
   - [ ] Implement IMAP connection (`mail/imap_client.rs`)
   - [ ] Implement email fetching logic

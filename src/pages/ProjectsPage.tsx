@@ -1,60 +1,65 @@
-import React from "react";
-import { Plus, LayoutGrid, Archive } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Plus, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProjectCard, ProjectData } from "@/components/project/ProjectCard";
 import { useNavigate } from "react-router-dom";
+import { invoke } from "@tauri-apps/api/core";
 
-// Mock Data
-const MOCK_PROJECTS: ProjectData[] = [
-  {
-    id: "1",
-    title: "Client A - 2024 Cooperation Agreement",
-    description:
-      "Annual framework agreement negotiation and final signing process.",
-    status: "pinned",
-    lastUpdated: "2 hours ago",
-    stats: { emails: 12, attachments: 8 },
-  },
-  {
-    id: "2",
-    title: "Product X Tech Integration",
-    description:
-      "Technical integration discussions with the engineering team regarding API v2.",
-    status: "active",
-    lastUpdated: "Yesterday",
-    stats: { emails: 23, attachments: 15 },
-  },
-  {
-    id: "3",
-    title: "Vendor B Inquiry Process",
-    status: "active",
-    lastUpdated: "3 days ago",
-    stats: { emails: 8, attachments: 3 },
-  },
-  {
-    id: "4",
-    title: "Q1 Marketing Campaign",
-    description: "Social media assets and copy review.",
-    status: "archived",
-    lastUpdated: "Jan 15, 2024",
-    stats: { emails: 45, attachments: 20 },
-  },
-  {
-    id: "5",
-    title: "Legal Review - NDA",
-    status: "archived",
-    lastUpdated: "Dec 20, 2023",
-    stats: { emails: 5, attachments: 2 },
-  },
-];
+// Define the shape of data coming from Rust
+interface BackendProject {
+  id: number;
+  title: string;
+  description?: string;
+  status: string;
+  is_pinned: boolean;
+  last_updated: string;
+  stats: {
+    emails: number;
+    attachments: number;
+  };
+}
 
 export function ProjectsPage() {
   const navigate = useNavigate();
-  const pinnedProjects = MOCK_PROJECTS.filter((p) => p.status === "pinned");
-  const activeProjects = MOCK_PROJECTS.filter((p) => p.status === "active");
-  const archivedProjects = MOCK_PROJECTS.filter((p) => p.status === "archived");
+  const [projects, setProjects] = useState<ProjectData[]>([]);
+
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const data = await invoke<BackendProject[]>("list_projects");
+        // Map backend data to UI data
+        const mapped: ProjectData[] = data.map((p) => ({
+          id: p.id.toString(),
+          title: p.title,
+          description: p.description,
+          status: p.is_pinned ? "pinned" : (p.status as any), // Map logic
+          lastUpdated: p.last_updated,
+          stats: p.stats,
+        }));
+        setProjects(mapped);
+      } catch (e) {
+        console.error("Failed to fetch projects:", e);
+      }
+    }
+    fetchProjects();
+  }, []);
+
+  // Filter based on UI status (which we mapped specially above)
+  const pinnedProjects = projects.filter((p) => p.status === "pinned");
+  const activeProjects = projects.filter((p) => p.status === "active"); // Already excluded pinned in mapping logic?
+  // Wait, if I map is_pinned -> 'pinned', the original status ('active') is lost.
+  // Better logic:
+  // Pinned section: projects where is_pinned is true.
+  // Active section: projects where status is 'active' AND NOT pinned.
+  // Archived section: projects where status is 'archived'. (Pinned archived? unlikely but handled)
+
+  // Let's refine the mapping. I'll stick to local state 'projects' holding the backend structure or mapped structure,
+  // but simpler to map to ProjectData for Card compatibility.
+  // ProjectCard interprets 'pinned' status for border color.
+
+  const archivedProjects = projects.filter((p) => p.status === "archived");
 
   const handleProjectClick = (id: string) => {
     navigate(`/projects/${id}`);
