@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Inbox,
   Files,
@@ -45,6 +46,16 @@ const SidebarItem = ({
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("projects");
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/artifacts")) {
+      setActiveItem("artifacts");
+    } else if (location.pathname.startsWith("/projects")) {
+      setActiveItem("projects");
+    }
+  }, [location.pathname]);
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
@@ -86,14 +97,20 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
               icon={LayoutGrid}
               label="Projects"
               isActive={activeItem === "projects"}
-              onClick={() => setActiveItem("projects")}
+              onClick={() => {
+                setActiveItem("projects");
+                navigate("/projects");
+              }}
               collapsed={collapsed}
             />
             <SidebarItem
               icon={Files}
               label="Artifacts"
               isActive={activeItem === "artifacts"}
-              onClick={() => setActiveItem("artifacts")}
+              onClick={() => {
+                setActiveItem("artifacts");
+                navigate("/artifacts");
+              }}
               collapsed={collapsed}
             />
             <SidebarItem

@@ -21,3 +21,37 @@ pub struct ProjectStats {
     pub attachments: i64,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "lowercase")] // 'milestone' | 'email' | 'thread'
+pub enum TimelineEvent {
+    Milestone(MilestoneEvent),
+    Email(EmailEvent),
+    Thread(ThreadEvent),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MilestoneEvent {
+    pub id: String,
+    pub date: String,
+    pub title: String,
+    pub status: String,
+    pub children: Vec<TimelineEvent>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EmailEvent {
+    pub id: String,
+    pub date: String,
+    pub sender: String,
+    pub content: String,
+    pub subject: String,
+    // pub attachments: Vec<Attachment>, // skipping for now or use placeholder
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ThreadEvent {
+    pub id: String,
+    pub date: String, // Latest date in thread
+    pub children: Vec<TimelineEvent>, // Usually EmailEvents
+}
+

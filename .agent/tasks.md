@@ -13,46 +13,42 @@
   - [x] Implement AppLayout (Sidebar, Header)
   - [x] Set up React Router
 
-## 2. 前端核心页面开发 (Completed)
+## 2. 前端核心页面开发 (In Progress)
 
 - [x] **Projects List Page**
   - [x] Project Card component
   - [x] Tabs for Pinned/Active/Archived
+  - [x] Integrate `list_projects` command (DB connected)
 - [x] **Project Detail Page**
-  - [x] Timeline View component (Milestone -> Thread -> Email)
-  - [x] Artifacts Tab placeholder
-  - [x] Scrolling & Layout fixes
+  - [x] Timeline View component (UI)
+  - [x] Integrate `get_project` & `get_project_timeline` commands
+  - [x] Integrate `get_project_artifacts` command
+  - [x] Artifacts Library View (with file type icons)
+- [ ] **Global Mailbox (Inbox) Page**
+  - [ ] Design Inbox layout (Master-Detail or List)
+  - [ ] Implement `get_inbox_emails` command
+  - [ ] Add Route & Sidebar Link
 
 ## 3. Rust 后端骨架搭建 (Completed)
 
 - [x] **Module Structure**
-  - [x] Create directories: `mail`, `project`, `search`, `artifacts`, `index_scheduler`, `storage`, `utils`
-  - [x] Create `mod.rs` for all modules
-  - [x] Implement basic command placeholders (`greet_user`, etc.)
+  - [x] Directories & mod.rs created
 - [x] **Dependency Management**
-  - [x] Add crates: `tantivy`, `rusqlite`, `lettre`, `async-imap`, `tokio`, etc.
-  - [x] Update `lib.rs` to register modules
+  - [x] Dependencies added to Cargo.toml
 
 ## 4. 核心功能开发 (In Progress)
 
-- [x] **Data Persistence (DB Init)**
-  - [x] Initialize SQLite database (`storage/database.rs`)
-  - [x] Define schemas for `projects`, `emails`, `threads`, `artifacts`
-  - [x] Seed Mock Data
-- [ ] **Frontend <-> Backend Integration**
-  - [ ] Rust: Implement `list_projects` command with DB query
-  - [ ] Frontend: Replace mock data with `invoke('list_projects')` in `ProjectsPage`
+- [x] **Data Persistence**
+  - [x] DB Init & Schema
+  - [x] Mock Data Seeding (Projects)
+  - [x] Mock Data Seeding (Timeline/Emails)
+  - [x] Mock Data Seeding (Attachments)
 - [ ] **Mail Synchronization**
-  - [ ] Implement IMAP connection (`mail/imap_client.rs`)
-  - [ ] Implement email fetching logic
+  - [ ] Implement IMAP connection
 - [ ] **Project Intelligence**
-  - [ ] Implement rule-based classification
-- [ ] **Search Engine**
-  - [ ] Initialize Tantivy index
+  - [ ] Rule-based classification
 
 ## 5. UI 集成与进阶
 
-- [ ] **Connect Frontend to Backend**
-  - [ ] Call Rust commands from React
-- [ ] **Artifacts View Implementation**
+- [x] **Artifacts View Implementation** (Artifacts hub page + route)
 - [ ] **Search UI Implementation**

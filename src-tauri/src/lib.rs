@@ -20,8 +20,11 @@ pub fn run() {
             commands::greet_user,
             commands::mail::fetch_emails,
             commands::project::list_projects,
+            commands::project::get_project,
+            commands::project::get_project_timeline,
             commands::search::search_query,
-            commands::artifact::get_artifact
+            commands::artifact::get_artifact,
+            commands::artifact::get_project_artifacts
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
