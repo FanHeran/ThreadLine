@@ -204,18 +204,18 @@ const ThreadItem = ({ event }: { event: TimelineEvent }) => {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-between h-auto py-2 px-3 text-muted-foreground hover:text-foreground"
+          className="w-full justify-between h-auto py-2.5 px-3 text-foreground/80 hover:text-foreground hover:bg-muted/50 border border-border/40 rounded-lg"
         >
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-md bg-surface-100 dark:bg-surface-100/10 flex items-center justify-center">
-              <Mail className="h-3.5 w-3.5" />
+            <div className="h-6 w-6 rounded-md bg-surface-100 dark:bg-surface-100/20 flex items-center justify-center">
+              <Mail className="h-3.5 w-3.5 text-foreground/70" />
             </div>
-            <span className="text-sm">Thread ({emailCount})</span>
+            <span className="text-sm font-medium">Thread ({emailCount})</span>
           </div>
           {isOpen ? (
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className="h-4 w-4 text-foreground/60" />
           ) : (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 text-foreground/60" />
           )}
         </Button>
       </CollapsibleTrigger>
@@ -338,7 +338,7 @@ export function TimelineView({ events }: { events: TimelineEvent[] }) {
           {/* 该分组的事件 */}
           <div className="relative space-y-6">
             {/* Vertical Line - centered on 16px circle */}
-            <div className="absolute left-2 top-2 bottom-0 w-px bg-border/60" />
+            <div className="absolute left-2 top-2 bottom-0 w-[2px] bg-border dark:bg-border/80 rounded-full" />
 
             {groupEvents.map((event) => (
               <div key={event.id} className="relative">
@@ -373,7 +373,7 @@ export function TimelineView({ events }: { events: TimelineEvent[] }) {
                       </div>
 
                       {event.children && event.children.length > 0 && (
-                        <div className="space-y-3 border-l-2 border-dashed pl-4 ml-1 border-border/40">
+                        <div className="space-y-3 border-l-2 border-dashed pl-4 ml-1 border-border/70 dark:border-border/60">
                           {event.children.map((child) => (
                             <div key={child.id}>
                               {child.type === "email" && (

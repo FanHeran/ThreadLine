@@ -179,7 +179,7 @@ export function ProjectDetailPage() {
         </TabsList>
 
         <TabsContent value="timeline" className="flex-1 min-h-0 mt-0">
-          <ScrollArea className="flex-1 -mx-6 px-6">
+          <ScrollArea className="h-full -mx-6 px-6">
             <div className="max-w-3xl pb-10">
               <TimelineView events={events} />
             </div>
@@ -187,7 +187,7 @@ export function ProjectDetailPage() {
         </TabsContent>
 
         <TabsContent value="artifacts" className="flex-1 min-h-0 mt-0">
-          <ScrollArea className="flex-1 -mx-6 px-6">
+          <ScrollArea className="h-full -mx-6 px-6">
             <div className="pb-10">
               {artifacts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
