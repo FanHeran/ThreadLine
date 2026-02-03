@@ -14,6 +14,8 @@ export const PageContainer = ({
     <div
       className={cn(
         "h-full w-full flex flex-col",
+        // 添加微妙的背景层次
+        "bg-gradient-to-b from-transparent via-background/30 to-background/60",
         className,
       )}
       {...props}

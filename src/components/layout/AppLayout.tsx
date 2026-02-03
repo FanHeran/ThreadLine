@@ -5,14 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Inbox,
-  Files,
-  Search,
-  Settings,
-  LayoutGrid,
-  Menu,
-} from "lucide-react";
+import { Inbox, Files, Search, Settings, LayoutGrid, Menu } from "lucide-react";
 
 interface SidebarItemProps {
   icon: React.ElementType;
@@ -35,8 +28,8 @@ const SidebarItem = ({
       "group w-full justify-start relative overflow-hidden rounded-lg text-[13px] transition-all duration-200",
       collapsed ? "px-2.5 justify-center" : "px-3",
       isActive
-        ? "bg-surface-100/80 text-foreground font-medium shadow-[inset_0_0_0_1px_hsl(var(--border)/0.35)] dark:bg-surface-100/20"
-        : "text-muted-foreground font-normal hover:text-foreground hover:bg-surface-100/60 dark:hover:bg-surface-100/15",
+        ? "bg-white/60 dark:bg-surface-100/25 text-foreground font-medium shadow-[0_1px_2px_rgba(0,0,0,0.05),inset_0_0_0_1px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(255,255,255,0.05)]"
+        : "text-muted-foreground font-normal hover:text-foreground hover:bg-white/40 dark:hover:bg-surface-100/15",
     )}
     onClick={onClick}
   >
@@ -44,7 +37,7 @@ const SidebarItem = ({
     {isActive && (
       <span
         className={cn(
-          "absolute top-1/2 -translate-y-1/2 h-4 w-[2px] rounded-full bg-primary/80",
+          "absolute top-1/2 -translate-y-1/2 h-4 w-[2px] rounded-full bg-primary shadow-sm",
           collapsed ? "left-1" : "left-1",
         )}
       />
@@ -81,11 +74,23 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Sidebar */}
       <div
         className={cn(
-          "relative flex flex-col border-r border-border/50 bg-gradient-to-b from-surface-50/90 via-surface-50/70 to-surface-50/50 dark:from-surface-50/22 dark:via-surface-50/14 dark:to-surface-50/8 backdrop-blur-2xl shadow-[inset_0_1px_0_hsl(var(--border)/0.4)] transition-all duration-300 ease-out",
+          "relative flex flex-col border-r border-border/40",
+          // 微妙渐变背景 + 玻璃态效果
+          "bg-gradient-to-b from-white/80 via-white/60 to-white/40",
+          "dark:from-surface-50/25 dark:via-surface-50/15 dark:to-surface-50/8",
+          // 背景模糊和噪点
+          "backdrop-blur-xl",
+          // 内阴影和边框高光
+          "shadow-[inset_1px_0_0_rgba(255,255,255,0.1),inset_0_1px_0_rgba(255,255,255,0.05)]",
+          "dark:shadow-[inset_1px_0_0_rgba(255,255,255,0.03),inset_0_1px_0_rgba(255,255,255,0.02)]",
+          // 右侧微妙阴影
+          "shadow-[2px_0_8px_rgba(0,0,0,0.04)]",
+          "dark:shadow-[2px_0_12px_rgba(0,0,0,0.3)]",
+          "transition-all duration-300 ease-out",
           collapsed ? "w-[60px]" : "w-[224px]",
         )}
       >
-        {/* Logo */}
+        {/* Header */}
         <div className="flex h-14 items-center px-3 py-2">
           {!collapsed && (
             <span className="text-[15px] font-semibold text-foreground/90 tracking-tight">
@@ -96,15 +101,15 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
             variant="ghost"
             size="icon"
             className={cn(
-              "ml-auto h-8 w-8 rounded-full hover:bg-surface-100/70 dark:hover:bg-surface-100/20",
-              collapsed && "mx-auto"
+              "h-8 w-8 rounded-full hover:bg-surface-100/70 dark:hover:bg-surface-100/20",
+              collapsed ? "mx-auto" : "ml-auto",
             )}
             onClick={() => setCollapsed(!collapsed)}
           >
             <Menu className="h-4 w-4" />
           </Button>
         </div>
-        <Separator className="mx-2 opacity-40" />
+        <Separator className="mx-2 opacity-30" />
 
         {/* Search Bar */}
         {!collapsed && (
@@ -113,7 +118,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
               <Input
                 placeholder="Search..."
-                className="h-9 pl-9 bg-surface-100/60 border border-border/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] dark:bg-surface-100/20 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] focus-visible:ring-1 focus-visible:ring-ring/40 focus-visible:border-border/60 placeholder:text-muted-foreground/70"
+                className="h-9 pl-9 bg-white/50 dark:bg-surface-100/20 border border-border/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] focus-visible:ring-1 focus-visible:ring-ring/40 focus-visible:border-border/60 focus-visible:bg-white dark:focus-visible:bg-surface-100/30 placeholder:text-muted-foreground/60 transition-colors"
               />
             </div>
           </div>
@@ -154,7 +159,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </ScrollArea>
 
-        <Separator className="mx-2 opacity-40" />
+        <Separator className="mx-2 opacity-30" />
         <div className="p-2">
           <SidebarItem
             icon={Settings}
