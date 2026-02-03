@@ -167,14 +167,14 @@ export function ProjectDetailPage() {
 
       {/* Content */}
       <Tabs defaultValue="timeline" className="flex-1 flex flex-col min-h-0">
-        <TabsList className="mb-6">
-          <TabsTrigger value="timeline" className="flex gap-2">
+        <TabsList className="mb-6 w-fit bg-white/70 dark:bg-surface-100/30 backdrop-blur-md border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <TabsTrigger value="timeline" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Timeline
+            <span>Timeline</span>
           </TabsTrigger>
-          <TabsTrigger value="artifacts" className="flex gap-2">
+          <TabsTrigger value="artifacts" className="flex items-center gap-2">
             <Files className="h-4 w-4" />
-            Artifacts Library
+            <span>Artifacts Library</span>
           </TabsTrigger>
         </TabsList>
 
@@ -206,23 +206,28 @@ export function ProjectDetailPage() {
                   {artifacts.map((a) => (
                     <div
                       key={a.id}
-                      className="border border-border/40 bg-card p-4 rounded-lg flex flex-col items-center hover:shadow-md hover:border-border transition-all cursor-pointer"
+                      className="group relative border border-border/50 bg-white/60 dark:bg-surface-100/20 backdrop-blur-md p-4 rounded-xl flex flex-col items-center shadow-[0_1px_3px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_8px_16px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.8)] dark:hover:shadow-[0_8px_16px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-primary/40 hover:bg-white/80 dark:hover:bg-surface-100/30 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                     >
-                      <div className="text-3xl mb-3 text-blue-500">
-                        {a.file_type === "pdf"
-                          ? "📄"
-                          : a.file_type === "docx"
-                            ? "📝"
-                            : "📁"}
-                      </div>
-                      <div
-                        className="font-medium truncate w-full text-center text-sm"
-                        title={a.filename}
-                      >
-                        {a.filename}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {(a.file_size / 1024).toFixed(0)} KB
+                      {/* 玻璃态高光层 */}
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/40 via-white/0 to-white/0 dark:from-white/10 dark:via-white/0 dark:to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+
+                      <div className="relative z-10 flex flex-col items-center w-full">
+                        <div className="text-3xl mb-3 transition-transform group-hover:scale-110 duration-200">
+                          {a.file_type === "pdf"
+                            ? "📄"
+                            : a.file_type === "docx"
+                              ? "📝"
+                              : "📁"}
+                        </div>
+                        <div
+                          className="font-medium truncate w-full text-center text-sm group-hover:text-primary transition-colors"
+                          title={a.filename}
+                        >
+                          {a.filename}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {(a.file_size / 1024).toFixed(0)} KB
+                        </div>
                       </div>
                     </div>
                   ))}
