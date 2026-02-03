@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import {
-  Inbox as InboxIcon,
   Paperclip,
   Search,
   RefreshCw,
   Filter,
   Mail,
-  Clock,
   Reply,
   Forward,
 } from "lucide-react";
@@ -15,14 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,31 +28,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { PageContainer } from "@/components/layout/PageContainer";
-
-// CountBadge component matching ProjectsPage style
-function CountBadge({
-  count,
-  variant = "default",
-  className,
-}: {
-  count: number;
-  variant?: "default" | "muted";
-  className?: string;
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium",
-        variant === "default"
-          ? "bg-primary/10 text-primary"
-          : "bg-muted/50 text-muted-foreground",
-        className,
-      )}
-    >
-      {count}
-    </span>
-  );
-}
 
 interface EmailPreview {
   id: number;
@@ -73,6 +45,7 @@ export function InboxPage() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "attachments">("all");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     invoke<EmailPreview[]>("get_inbox_emails")
@@ -86,10 +59,6 @@ export function InboxPage() {
         setLoading(false);
       });
   }, []);
-
-  const attachmentsCount = emails.filter(
-    (email) => email.has_attachments,
-  ).length;
 
   const filteredEmails = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -107,19 +76,6 @@ export function InboxPage() {
       );
     });
   }, [emails, filter, query]);
-
-  useEffect(() => {
-    if (filteredEmails.length === 0) {
-      setSelectedId(null);
-      return;
-    }
-    if (
-      selectedId === null ||
-      !filteredEmails.some((email) => email.id === selectedId)
-    ) {
-      setSelectedId(filteredEmails[0].id);
-    }
-  }, [filteredEmails, selectedId]);
 
   const selectedEmail =
     selectedId === null
@@ -157,230 +113,245 @@ export function InboxPage() {
 
   return (
     <PageContainer className="p-6 bg-muted/30">
-      {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-        <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">
-            Inbox
-          </h1>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground/55 leading-tight">
-            <span>messages</span>
-            <CountBadge
-              count={emails.length}
-              variant="muted"
-              className="text-[10px]"
-            />
-            <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-            <span>with attachments</span>
-            <CountBadge
-              count={attachmentsCount}
-              variant="muted"
-              className="text-[10px]"
-            />
+      {/* Toolbar - Responsive */}
+      <div className="flex flex-col gap-3 mb-6 shrink-0">
+        {/* Title Row */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+              Inbox
+            </h1>
+            <Badge variant="secondary" className="text-xs">
+              {filteredEmails.length}
+            </Badge>
+          </div>
+          {/* Mobile: Icon buttons */}
+          <div className="flex items-center gap-1 sm:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="h-8 w-8">
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setFilter("all")}>
+                  All messages
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilter("attachments")}>
+                  With attachments
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" size="icon" className="h-8 w-8">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button size="icon" className="h-8 w-8">
+              <Mail className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Sync
-          </Button>
-          <Button size="sm">
-            <Mail className="mr-2 h-4 w-4" />
-            Compose
-          </Button>
+
+        {/* Search and Actions Row - Desktop only */}
+        <div className="hidden sm:flex items-center gap-2">
+          {/* Search Bar */}
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search emails..."
+              className="pl-9 h-9 text-sm w-full"
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9">
+                  <Filter className="h-4 w-4 mr-2" />
+                  {filter === "all" ? "All" : "Attachments"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setFilter("all")}>
+                  All messages
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setFilter("attachments")}>
+                  With attachments
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button variant="outline" size="sm" className="h-9">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              <span className="hidden md:inline">Sync</span>
+            </Button>
+            <Button size="sm" className="h-9">
+              <Mail className="h-4 w-4 mr-2" />
+              <span className="hidden md:inline">Compose</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Search Bar - Mobile only */}
+        <div className="relative sm:hidden">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search emails..."
+            className="pl-9 h-9 text-sm w-full"
+          />
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 min-h-0 grid gap-4 lg:grid-cols-[320px_1fr]">
-        <Card className="flex flex-col min-h-0 bg-white/60 dark:bg-surface-100/20 backdrop-blur-md border-border/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-base font-medium">All Mail</CardTitle>
-              <Badge variant="secondary">{filteredEmails.length}</Badge>
+      {/* Email List - Full Width */}
+      <div className="flex-1 min-h-0 rounded-lg border border-border/50 overflow-hidden bg-white/60 dark:bg-surface-100/20 backdrop-blur-md shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
+        <ScrollArea className="h-full">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <RefreshCw className="h-8 w-8 text-muted-foreground/40 animate-spin mb-3" />
+              <p className="text-sm text-muted-foreground/70">
+                Loading emails...
+              </p>
             </div>
-            <CardDescription className="text-xs">
-              Search or filter to narrow the inbox.
-            </CardDescription>
-            <div className="flex items-center gap-2 pt-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search..."
-                  className="pl-9 h-8 text-sm"
-                />
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-8 w-8">
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setFilter("all")}>
-                    All messages
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilter("attachments")}>
-                    With attachments
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Mail className="h-8 w-8 text-destructive/60 mb-3" />
+              <p className="text-sm font-medium text-destructive">
+                Failed to load inbox
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-1">{error}</p>
             </div>
-          </CardHeader>
-          <Separator />
-          <CardContent className="flex-1 min-h-0 p-0">
-            <ScrollArea className="h-full">
-              {loading ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="h-16 w-16 rounded-2xl bg-white/60 dark:bg-surface-100/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
-                    <RefreshCw className="h-8 w-8 text-muted-foreground/40 animate-spin" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground/70">
-                    Loading emails...
-                  </p>
-                </div>
-              ) : error ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="h-16 w-16 rounded-2xl bg-white/60 dark:bg-surface-100/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
-                    <Mail className="h-8 w-8 text-destructive/60" />
-                  </div>
-                  <p className="text-sm font-medium text-destructive">
-                    Failed to load inbox
-                  </p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">
-                    {error}
-                  </p>
-                </div>
-              ) : filteredEmails.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="h-16 w-16 rounded-2xl bg-white/60 dark:bg-surface-100/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
-                    <Mail className="h-8 w-8 text-muted-foreground/40" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground/70">
-                    {emails.length === 0
-                      ? "Inbox is empty"
-                      : "No messages found"}
-                  </p>
-                  <p className="text-xs text-muted-foreground/60 mt-1">
-                    {emails.length === 0
-                      ? "No messages to display"
-                      : "Try adjusting your filters"}
-                  </p>
-                </div>
-              ) : (
-                filteredEmails.map((email) => {
-                  const sender = parseSender(email.sender);
-                  const isActive = email.id === selectedId;
-                  return (
-                    <button
-                      key={email.id}
-                      type="button"
-                      onClick={() => setSelectedId(email.id)}
-                      className={cn(
-                        "group w-full text-left px-4 py-3 border-b border-l-[3px] border-transparent transition-all duration-200",
-                        "hover:bg-white/50 dark:hover:bg-surface-100/15 hover:backdrop-blur-sm hover:shadow-[0_1px_3px_rgba(0,0,0,0.04)] dark:hover:shadow-[0_1px_3px_rgba(0,0,0,0.2)]",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0",
-                        isActive &&
-                          "bg-white/60 dark:bg-surface-100/25 backdrop-blur-sm shadow-[0_2px_4px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3)] border border-border/50 !border-l-[3px] !border-l-primary",
+          ) : filteredEmails.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Mail className="h-8 w-8 text-muted-foreground/40 mb-3" />
+              <p className="text-sm font-medium text-foreground/70">
+                {emails.length === 0 ? "Inbox is empty" : "No messages found"}
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-1">
+                {emails.length === 0
+                  ? "No messages to display"
+                  : "Try adjusting your search"}
+              </p>
+            </div>
+          ) : (
+            filteredEmails.map((email) => {
+              const sender = parseSender(email.sender);
+              const isActive = email.id === selectedId;
+              return (
+                <button
+                  key={email.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedId(email.id);
+                    setSheetOpen(true);
+                  }}
+                  className={cn(
+                    "block w-full min-w-0 text-left px-4 py-2.5 border-b border-border/30 transition-all duration-150 overflow-hidden",
+                    "hover:bg-white/40 dark:hover:bg-surface-100/10",
+                    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-primary",
+                    isActive &&
+                      "bg-primary/5 dark:bg-primary/10 border-l-2 border-l-primary",
+                  )}
+                >
+                  {/* Header: Sender and Date */}
+                  <div className="flex items-start gap-2 mb-1 min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                      <span
+                        className="font-semibold text-sm text-foreground truncate"
+                        title={sender.name}
+                      >
+                        {sender.name}
+                      </span>
+                      {email.has_attachments && (
+                        <Paperclip className="h-3 w-3 text-muted-foreground shrink-0" />
                       )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="font-medium truncate text-sm"
-                              title={sender.name}
-                            >
-                              {sender.name}
-                            </span>
-                            {email.has_attachments && (
-                              <Paperclip className="h-3 w-3 text-muted-foreground" />
-                            )}
-                          </div>
-                          <div
-                            className="text-sm text-foreground/90 truncate"
-                            title={email.subject}
-                          >
-                            {email.subject}
-                          </div>
-                          <div className="text-xs text-muted-foreground/80 truncate">
-                            {email.preview}
-                          </div>
-                        </div>
-                        <div className="text-xs text-muted-foreground/80 whitespace-nowrap">
-                          {formatDate(email.date)}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })
-              )}
-            </ScrollArea>
-          </CardContent>
-        </Card>
+                    </div>
+                    <span className="text-xs text-muted-foreground/70 shrink-0 whitespace-nowrap">
+                      {formatDate(email.date)}
+                    </span>
+                  </div>
 
-        <Card className="flex flex-col min-h-0 bg-white/60 dark:bg-surface-100/20 backdrop-blur-md border-border/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <CardTitle className="text-lg">
-                  {selectedEmail
-                    ? selectedEmail.subject
-                    : "No message selected"}
-                </CardTitle>
-                {selectedEmail && (
-                  <CardDescription className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="flex items-center gap-1">
-                      <InboxIcon className="h-3.5 w-3.5" />
-                      {parseSender(selectedEmail.sender).name}
-                    </span>
-                    <Separator orientation="vertical" className="h-4" />
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      {formatDate(selectedEmail.date)}
-                    </span>
-                    {selectedEmail.has_attachments && (
-                      <>
-                        <Separator orientation="vertical" className="h-4" />
-                        <Badge variant="secondary" className="text-xs">
-                          Attachments
-                        </Badge>
-                      </>
-                    )}
-                  </CardDescription>
-                )}
+                  {/* Subject */}
+                  <div className="text-sm text-foreground/80 line-clamp-1 break-words mb-0.5">
+                    {email.subject}
+                  </div>
+
+                  {/* Preview */}
+                  <div className="text-xs text-muted-foreground/70 line-clamp-1 break-words">
+                    {email.preview}
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </ScrollArea>
+      </div>
+
+      {/* Email Detail Sheet */}
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent className="w-full sm:max-w-2xl bg-white/95 dark:bg-surface-100/95 backdrop-blur-xl">
+          {selectedEmail ? (
+            <>
+              <SheetHeader className="space-y-3">
+                <SheetTitle className="text-xl font-semibold text-foreground pr-8">
+                  {selectedEmail.subject}
+                </SheetTitle>
+                <SheetDescription className="flex flex-wrap items-center gap-3 text-sm">
+                  <span className="font-medium text-foreground">
+                    {parseSender(selectedEmail.sender).name}
+                  </span>
+                  <span className="text-muted-foreground/50">•</span>
+                  <span>{formatDate(selectedEmail.date)}</span>
+                  {selectedEmail.has_attachments && (
+                    <>
+                      <span className="text-muted-foreground/50">•</span>
+                      <span className="flex items-center gap-1.5">
+                        <Paperclip className="h-3.5 w-3.5" />
+                        Attachments
+                      </span>
+                    </>
+                  )}
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="mt-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Button variant="default" size="sm">
+                    <Reply className="h-4 w-4 mr-2" />
+                    Reply
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Forward className="h-4 w-4 mr-2" />
+                    Forward
+                  </Button>
+                </div>
+
+                <div className="pt-4 border-t border-border/50">
+                  <ScrollArea className="h-[calc(100vh-280px)]">
+                    <div className="pr-4">
+                      <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">
+                        {selectedEmail.preview}
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" disabled={!selectedEmail}>
-                  <Reply className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" disabled={!selectedEmail}>
-                  <Forward className="h-4 w-4" />
-                </Button>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <Mail className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground/60">
+                  No message selected
+                </p>
               </div>
             </div>
-          </CardHeader>
-          <Separator />
-          <CardContent className="flex-1 min-h-0">
-            {selectedEmail ? (
-              <div className="h-full flex flex-col">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground/60 mb-3">
-                  Preview
-                </div>
-                <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">
-                  {selectedEmail.preview}
-                </div>
-              </div>
-            ) : (
-              <div className="h-full flex items-center justify-center text-sm text-muted-foreground/60">
-                Select a message to view its preview.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </PageContainer>
   );
 }

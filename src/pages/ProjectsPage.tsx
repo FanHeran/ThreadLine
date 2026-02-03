@@ -195,7 +195,7 @@ export function ProjectsPage() {
       className={cn(
         "gap-3",
         viewMode === "grid"
-          ? "grid auto-rows-max grid-cols-[repeat(auto-fit,minmax(260px,360px))] justify-start"
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-max"
           : "flex flex-col",
       )}
     >
@@ -257,7 +257,7 @@ export function ProjectsPage() {
             className={cn(
               "gap-3",
               viewMode === "grid"
-                ? "grid auto-rows-max grid-cols-[repeat(auto-fit,minmax(260px,360px))] justify-start"
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-max"
                 : "flex flex-col",
             )}
           >

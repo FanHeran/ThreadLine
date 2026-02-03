@@ -158,10 +158,10 @@ export function ArtifactsPage() {
             </div>
           ) : (
             <section>
-              <h2 className="text-sm font-semibold text-foreground/75 tracking-wide mb-4">
-                Projects with Artifacts
-              </h2>
-              <div className="grid auto-rows-max grid-cols-[repeat(auto-fit,minmax(260px,360px))] justify-start gap-3">
+            <h2 className="text-sm font-semibold text-foreground/75 tracking-wide mb-4">
+              Projects with Artifacts
+            </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-max gap-3">
                 {projectsWithArtifacts.map((p) => (
                   <div key={p.id} className="w-full">
                     <ProjectCard
