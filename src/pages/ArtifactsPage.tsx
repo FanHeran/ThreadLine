@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FolderOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProjectCard, ProjectData } from "@/components/project/ProjectCard";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 interface BackendProject {
   id: number;
@@ -55,11 +56,13 @@ export function ArtifactsPage() {
   };
 
   return (
-    <div className="h-full flex flex-col p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Artifacts</h1>
-          <p className="text-muted-foreground mt-1">
+    <PageContainer className="p-6 space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="max-w-xl space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Artifacts
+          </h1>
+          <p className="text-sm text-muted-foreground/80">
             Browse attachments by project and jump into their libraries.
           </p>
         </div>
@@ -78,12 +81,12 @@ export function ArtifactsPage() {
       <ScrollArea className="flex-1 -mx-6 px-6">
         <div className="space-y-6 pb-10">
           {projectsWithArtifacts.length === 0 ? (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground/80">
               No artifacts found yet. Open a project to ingest attachments.
             </div>
           ) : (
             <section>
-              <h2 className="text-lg font-semibold mb-4">
+              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
                 Projects with artifacts
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -99,6 +102,6 @@ export function ArtifactsPage() {
           )}
         </div>
       </ScrollArea>
-    </div>
+    </PageContainer>
   );
 }

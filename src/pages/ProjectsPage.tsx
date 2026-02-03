@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Plus, Archive, Pin, CirclePlay, ChevronDown, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -23,19 +23,17 @@ interface BackendProject {
   };
 }
 
-// 骨架屏组件
+// 骨架屏绁E��
 function ProjectCardSkeleton({ viewMode = "grid" }: { viewMode?: "grid" | "list" }) {
   if (viewMode === "list") {
     return (
       <Card className="overflow-hidden border-border/40">
-        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-muted/20" />
         <div className="flex items-center gap-4 px-4 py-3">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="h-2 w-2 rounded-full bg-muted/30 animate-pulse shrink-0" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <div className="h-4 w-32 rounded bg-muted/20 animate-pulse" />
-                <div className="h-3 w-12 rounded bg-muted/15 animate-pulse shrink-0" />
               </div>
               <div className="h-3 w-48 rounded bg-muted/15 animate-pulse mt-1" />
             </div>
@@ -61,11 +59,9 @@ function ProjectCardSkeleton({ viewMode = "grid" }: { viewMode?: "grid" | "list"
 
   return (
     <Card className="overflow-hidden border-border/40">
-      <div className="h-1 bg-muted/20 w-full" />
       <CardHeader className="pb-2 pt-5">
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex items-center gap-2 mb-2">
           <div className="h-2 w-2 rounded-full bg-muted/30 animate-pulse" />
-          <div className="h-3 w-16 rounded bg-muted/20 animate-pulse" />
         </div>
         <div className="h-5 w-3/4 rounded bg-muted/20 animate-pulse mb-2" />
         <div className="h-3 w-full rounded bg-muted/15 animate-pulse" />
@@ -91,15 +87,24 @@ function ProjectCardSkeleton({ viewMode = "grid" }: { viewMode?: "grid" | "list"
   );
 }
 
-// 徽章样式组件
-function CountBadge({ count, variant = "default" }: { count: number; variant?: "default" | "muted" }) {
+// 徽章样式绁E��
+function CountBadge({
+  count,
+  variant = "default",
+  className,
+}: {
+  count: number;
+  variant?: "default" | "muted";
+  className?: string;
+}) {
   return (
     <span
       className={cn(
         "inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium",
         variant === "default"
           ? "bg-primary/10 text-primary"
-          : "bg-muted/50 text-muted-foreground"
+          : "bg-muted/50 text-muted-foreground",
+        className
       )}
     >
       {count}
@@ -158,19 +163,26 @@ export function ProjectsPage() {
 
   const isSectionCollapsed = (section: string) => collapsedSections.has(section);
 
-  // 骨架屏占位
+  // 骨架屏占佁E
   const SkeletonSection = ({ count = 3 }: { count?: number }) => (
     <div className={cn(
       "gap-3",
-      viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "flex flex-col"
+      viewMode === "grid"
+        ? "grid auto-rows-max grid-cols-[repeat(auto-fit,minmax(260px,360px))] justify-start"
+        : "flex flex-col"
     )}>
       {Array.from({ length: count }).map((_, i) => (
-        <ProjectCardSkeleton key={i} viewMode={viewMode} />
+        <div
+          key={i}
+          className="w-full"
+        >
+          <ProjectCardSkeleton viewMode={viewMode} />
+        </div>
       ))}
     </div>
   );
 
-  // Section 组件
+  // Section 绁E��
   const ProjectSection = ({
     title,
     icon,
@@ -200,10 +212,10 @@ export function ProjectsPage() {
           <div className={cn("flex items-center justify-center", iconColor)}>
             {icon}
           </div>
-          <h2 className="text-xs font-medium text-muted-foreground/80 uppercase tracking-wider leading-4">
+          <h2 className="text-sm font-semibold text-foreground/75 tracking-wide">
             {title}
           </h2>
-          <CountBadge count={projects.length} variant={badgeVariant} />
+          <CountBadge count={projects.length} variant={badgeVariant} className="text-[10px] opacity-70" />
           <ChevronDown
             className={cn(
               "h-3.5 w-3.5 text-muted-foreground/40 transition-transform duration-200",
@@ -216,17 +228,21 @@ export function ProjectsPage() {
             className={cn(
               "gap-3",
               viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                ? "grid auto-rows-max grid-cols-[repeat(auto-fit,minmax(260px,360px))] justify-start"
                 : "flex flex-col"
             )}
           >
             {projects.map((p) => (
-              <ProjectCard
+              <div
                 key={p.id}
-                project={p}
-                onClick={handleProjectClick}
-                viewMode={viewMode}
-              />
+                className="w-full"
+              >
+                <ProjectCard
+                  project={p}
+                  onClick={handleProjectClick}
+                  viewMode={viewMode}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -235,23 +251,23 @@ export function ProjectsPage() {
   };
 
   return (
-    <PageContainer className="p-6">
+    <PageContainer className="p-6 bg-muted/30">
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        <div className="space-y-0.5">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">
             Projects
           </h1>
-          <div className="flex items-center gap-2.5 text-xs text-muted-foreground/70">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground/55 leading-tight">
             <span>projects</span>
-            <CountBadge count={projects.length} variant="muted" />
+            <CountBadge count={projects.length} variant="muted" className="text-[10px]" />
             <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
             <span>active</span>
-            <CountBadge count={activeProjects.length} />
+            <CountBadge count={activeProjects.length} variant="muted" className="text-[10px]" />
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* 视图切换 */}
+        <div className="flex items-center gap-1.5">
+          {/* 见E��刁E�� */}
           <div className="flex items-center border border-border/50 rounded-md overflow-hidden">
             <button
               onClick={() => setViewMode("grid")}
@@ -368,3 +384,9 @@ export function ProjectsPage() {
     </PageContainer>
   );
 }
+
+
+
+
+
+

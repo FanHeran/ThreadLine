@@ -19,6 +19,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::greet_user,
             commands::mail::fetch_emails,
+            commands::mail::get_inbox_emails,
             commands::project::list_projects,
             commands::project::get_project,
             commands::project::get_project_timeline,

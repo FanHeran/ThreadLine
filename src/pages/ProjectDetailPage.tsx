@@ -104,7 +104,7 @@ export function ProjectDetailPage() {
 
       {/* Content Area */}
       <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-        <Tabs defaultValue="artifacts" className="flex-1 flex flex-col min-h-0">
+        <Tabs defaultValue="timeline" className="flex-1 flex flex-col min-h-0">
           <div className="px-4 pt-2 border-b">
             <TabsList>
               <TabsTrigger value="timeline" className="flex gap-2">

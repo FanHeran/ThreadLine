@@ -30,12 +30,6 @@ interface ProjectCardProps {
   viewMode?: "grid" | "list";
 }
 
-const statusColors = {
-  active: "bg-emerald-500",
-  archived: "bg-slate-400",
-  pinned: "bg-blue-500",
-};
-
 const statusDotColors = {
   active: "bg-emerald-500",
   archived: "bg-slate-400",
@@ -55,8 +49,8 @@ const getProgress = (project: ProjectData) => {
 };
 
 const ProgressRing = ({ value }: { value: number }) => {
-  const size = 24;
-  const stroke = 2;
+  const size = 28;
+  const stroke = 3;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - value);
@@ -64,7 +58,7 @@ const ProgressRing = ({ value }: { value: number }) => {
 
   return (
     <div
-      className="flex items-center justify-center"
+      className="relative flex items-center justify-center"
       title={`Progress ${percent}%`}
     >
       <svg
@@ -96,6 +90,9 @@ const ProgressRing = ({ value }: { value: number }) => {
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
+      <span className="pointer-events-none absolute text-[9px] font-medium text-muted-foreground/70 leading-none">
+        {percent}
+      </span>
     </div>
   );
 };
@@ -107,17 +104,11 @@ export function ProjectCard({ project, onClick, viewMode = "grid" }: ProjectCard
       <Card
         className={cn(
           "group relative overflow-hidden transition-all duration-200 cursor-pointer",
-          "border-border/60 hover:border-border hover:shadow-sm",
+          "border-border/60 shadow-[0_1px_2px_rgba(15,23,42,0.06)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.22)] hover:border-border hover:shadow-sm",
           "hover:bg-muted/30"
         )}
         onClick={() => onClick?.(project.id)}
       >
-        <div
-          className={cn(
-            "absolute left-0 top-0 bottom-0 w-0.5",
-            statusColors[project.status === "pinned" ? "pinned" : project.status]
-          )}
-        />
         <div className="flex items-center gap-4 px-4 py-3">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <span
@@ -130,9 +121,6 @@ export function ProjectCard({ project, onClick, viewMode = "grid" }: ProjectCard
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-foreground/90 group-hover:text-foreground truncate">
                   {project.title}
-                </span>
-                <span className="text-xs text-muted-foreground/60 uppercase tracking-wider shrink-0">
-                  {project.status}
                 </span>
               </div>
               {project.description && (
@@ -151,11 +139,11 @@ export function ProjectCard({ project, onClick, viewMode = "grid" }: ProjectCard
               <Paperclip className="h-3 w-3" />
               <span>{project.stats.attachments}</span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60 w-16 justify-end">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
               <Clock className="h-3 w-3" />
               <span className="truncate">{formatRelativeTime(project.lastUpdated)}</span>
+              <ProgressRing value={progress} />
             </div>
-            <ProgressRing value={progress} />
           </div>
         </div>
       </Card>
@@ -166,8 +154,7 @@ export function ProjectCard({ project, onClick, viewMode = "grid" }: ProjectCard
     <Card
       className={cn(
         "group relative overflow-hidden transition-all duration-200 cursor-pointer",
-        "border-border/60 hover:border-border hover:shadow-md",
-        "before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:opacity-100",
+        "border-border/60 shadow-[0_1px_2px_rgba(15,23,42,0.06)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.22)] hover:border-border hover:shadow-md",
         "hover:-translate-y-0.5"
       )}
       style={{
@@ -179,27 +166,16 @@ export function ProjectCard({ project, onClick, viewMode = "grid" }: ProjectCard
       } as React.CSSProperties}
       onClick={() => onClick?.(project.id)}
     >
-      {/* 顶部彩色条 */}
-      <div
-        className={cn(
-          "absolute top-0 left-0 right-0 h-1",
-          statusColors[project.status === "pinned" ? "pinned" : project.status]
-        )}
-      />
-
       <CardHeader className="pb-2 pt-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2">
               <span
                 className={cn(
                   "h-2 w-2 rounded-full",
                   statusDotColors[project.status === "pinned" ? "pinned" : project.status]
                 )}
               />
-              <span className="text-xs text-muted-foreground/70 font-medium uppercase tracking-wider">
-                {project.status}
-              </span>
             </div>
             <CardTitle className="line-clamp-1 text-base font-semibold text-foreground/90 group-hover:text-foreground">
               {project.title}
@@ -210,7 +186,6 @@ export function ProjectCard({ project, onClick, viewMode = "grid" }: ProjectCard
               </CardDescription>
             )}
           </div>
-          <ProgressRing value={progress} />
         </div>
       </CardHeader>
 
@@ -228,12 +203,17 @@ export function ProjectCard({ project, onClick, viewMode = "grid" }: ProjectCard
             </div>
             <span className="font-medium text-foreground/80">{project.stats.attachments}</span>
           </div>
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground/60">
+          <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground/60">
             <Clock className="h-3 w-3" />
             <span>{formatRelativeTime(project.lastUpdated)}</span>
+            <ProgressRing value={progress} />
           </div>
         </div>
       </CardContent>
     </Card>
   );
 }
+
+
+
+

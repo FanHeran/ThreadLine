@@ -24,10 +24,10 @@
   - [x] Integrate `get_project` & `get_project_timeline` commands
   - [x] Integrate `get_project_artifacts` command
   - [x] Artifacts Library View (with file type icons)
-- [ ] **Global Mailbox (Inbox) Page**
-  - [ ] Design Inbox layout (Master-Detail or List)
-  - [ ] Implement `get_inbox_emails` command
-  - [ ] Add Route & Sidebar Link
+- [x] **Global Mailbox (Inbox) Page**
+  - [x] Design Inbox layout (Master-Detail or List)
+  - [x] Implement `get_inbox_emails` command
+  - [x] Add Route & Sidebar Link
 
 ## 3. Rust 后端骨架搭建 (Completed)
 
