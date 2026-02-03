@@ -140,7 +140,19 @@ export function InboxPage() {
 
   const formatDate = (value: string) => {
     if (!value) return "";
-    return value.split(" ")[0];
+    try {
+      const date = new Date(value);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) return "Today";
+      if (diffDays === 1) return "Yesterday";
+      if (diffDays < 7) return `${diffDays}d ago`;
+      return value.split(" ")[0];
+    } catch {
+      return value.split(" ")[0];
+    }
   };
 
   return (
@@ -181,7 +193,7 @@ export function InboxPage() {
 
       {/* Content */}
       <div className="flex-1 min-h-0 grid gap-4 lg:grid-cols-[320px_1fr]">
-        <Card className="flex flex-col min-h-0">
+        <Card className="flex flex-col min-h-0 bg-white/60 dark:bg-surface-100/20 backdrop-blur-md border-border/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-base font-medium">All Mail</CardTitle>
@@ -221,18 +233,41 @@ export function InboxPage() {
           <CardContent className="flex-1 min-h-0 p-0">
             <ScrollArea className="h-full">
               {loading ? (
-                <div className="p-6 text-center text-sm text-muted-foreground/80">
-                  Loading emails...
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="h-16 w-16 rounded-2xl bg-white/60 dark:bg-surface-100/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+                    <RefreshCw className="h-8 w-8 text-muted-foreground/40 animate-spin" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground/70">
+                    Loading emails...
+                  </p>
                 </div>
               ) : error ? (
-                <div className="p-6 text-center text-sm text-destructive">
-                  Failed to load inbox: {error}
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="h-16 w-16 rounded-2xl bg-white/60 dark:bg-surface-100/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+                    <Mail className="h-8 w-8 text-destructive/60" />
+                  </div>
+                  <p className="text-sm font-medium text-destructive">
+                    Failed to load inbox
+                  </p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">
+                    {error}
+                  </p>
                 </div>
               ) : filteredEmails.length === 0 ? (
-                <div className="p-6 text-center text-sm text-muted-foreground/80">
-                  {emails.length === 0
-                    ? "Inbox is empty."
-                    : "No messages match the current filters."}
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="h-16 w-16 rounded-2xl bg-white/60 dark:bg-surface-100/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+                    <Mail className="h-8 w-8 text-muted-foreground/40" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground/70">
+                    {emails.length === 0
+                      ? "Inbox is empty"
+                      : "No messages found"}
+                  </p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">
+                    {emails.length === 0
+                      ? "No messages to display"
+                      : "Try adjusting your filters"}
+                  </p>
                 </div>
               ) : (
                 filteredEmails.map((email) => {
@@ -244,11 +279,11 @@ export function InboxPage() {
                       type="button"
                       onClick={() => setSelectedId(email.id)}
                       className={cn(
-                        "group w-full text-left px-4 py-3 border-b border-l-2 border-transparent transition-all duration-150",
-                        "hover:bg-surface-50 dark:hover:bg-surface-100/10",
+                        "group w-full text-left px-4 py-3 border-b border-l-[3px] border-transparent transition-all duration-200",
+                        "hover:bg-white/50 dark:hover:bg-surface-100/15 hover:backdrop-blur-sm hover:shadow-[0_1px_3px_rgba(0,0,0,0.04)] dark:hover:shadow-[0_1px_3px_rgba(0,0,0,0.2)]",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0",
                         isActive &&
-                          "bg-surface-100/50 dark:bg-surface-100/20 border-l-primary",
+                          "bg-white/60 dark:bg-surface-100/25 backdrop-blur-sm shadow-[0_2px_4px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3)] border border-border/50 !border-l-[3px] !border-l-primary",
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -286,7 +321,7 @@ export function InboxPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col min-h-0">
+        <Card className="flex flex-col min-h-0 bg-white/60 dark:bg-surface-100/20 backdrop-blur-md border-border/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">

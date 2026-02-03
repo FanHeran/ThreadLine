@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  CheckCircle2,
   Mail,
   ChevronDown,
   ChevronRight,
@@ -126,10 +125,10 @@ const EmailItem = ({
   return (
     <div
       className={cn(
-        "relative rounded-lg border bg-card/80 backdrop-blur-sm transition-colors",
+        "relative rounded-lg border transition-all duration-200",
         isThreadChild
-          ? "mt-2 ml-4 py-3 px-4 bg-surface-50/50 dark:bg-surface-100/5 border-dashed border-border/50"
-          : "py-3 px-4 border-border/60 hover:border-border",
+          ? "mt-2 ml-4 py-3 px-4 bg-white/40 dark:bg-surface-100/10 backdrop-blur-sm border-dashed border-border/50"
+          : "py-3 px-4 bg-white/60 dark:bg-surface-100/20 backdrop-blur-md border-border/60 hover:border-border hover:bg-white/80 dark:hover:bg-surface-100/30 shadow-[0_1px_3px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)]",
       )}
     >
       <div className="flex items-start justify-between gap-3 mb-2.5">
@@ -204,7 +203,7 @@ const ThreadItem = ({ event }: { event: TimelineEvent }) => {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-between h-auto py-2.5 px-3 text-foreground/80 hover:text-foreground hover:bg-muted/50 border border-border/40 rounded-lg"
+          className="w-full justify-between h-auto py-2.5 px-3 text-foreground/80 hover:text-foreground bg-white/50 dark:bg-surface-100/15 backdrop-blur-sm hover:bg-white/70 dark:hover:bg-surface-100/25 border border-border/50 rounded-lg shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.2)] transition-all duration-200"
         >
           <div className="flex items-center gap-2">
             <div className="h-6 w-6 rounded-md bg-surface-100 dark:bg-surface-100/20 flex items-center justify-center">
@@ -303,6 +302,23 @@ const groupEventsByDate = (
 };
 
 export function TimelineView({ events }: { events: TimelineEvent[] }) {
+  // 空状态处理
+  if (!events || events.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="h-16 w-16 rounded-2xl bg-white/60 dark:bg-surface-100/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+          <Mail className="h-8 w-8 text-muted-foreground/40" />
+        </div>
+        <h3 className="text-sm font-medium text-foreground/80 mb-1">
+          暂无时间线事件
+        </h3>
+        <p className="text-xs text-muted-foreground/60 max-w-xs">
+          该项目还没有任何邮件或里程碑事件
+        </p>
+      </div>
+    );
+  }
+
   const groupedEvents = groupEventsByDate(events);
   const groupOrder = ["今天", "昨天", "本周", "本月"];
 
@@ -327,37 +343,39 @@ export function TimelineView({ events }: { events: TimelineEvent[] }) {
     <div className="relative pb-8">
       {sortedGroups.map(([groupLabel, groupEvents], groupIndex) => (
         <div key={groupLabel} className={cn(groupIndex > 0 && "mt-8")}>
-          {/* 日期分组标签 */}
+          {/* 日期分组标签 - 玻璃态效果 */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="text-sm font-semibold text-foreground/70 uppercase tracking-wide">
-              {groupLabel}
+            <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/70 dark:bg-surface-100/25 backdrop-blur-md border border-border/50 shadow-[0_1px_3px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <span className="text-xs font-semibold text-foreground/80 uppercase tracking-wide">
+                {groupLabel}
+              </span>
             </div>
-            <div className="flex-1 h-px bg-border/40" />
+            <div className="flex-1 h-px bg-gradient-to-r from-border/40 to-transparent" />
           </div>
 
           {/* 该分组的事件 */}
           <div className="relative space-y-6">
-            {/* Vertical Line - centered on 16px circle */}
-            <div className="absolute left-2 top-2 bottom-0 w-[2px] bg-border dark:bg-border/80 rounded-full" />
+            {/* Vertical Line - 增强玻璃态效果，从顶部开始，精确对齐节点中心(13px + 1px = 14px) */}
+            <div className="absolute left-[13px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-border via-border/60 to-border/20 dark:from-border/80 dark:via-border/50 dark:to-border/10 rounded-full shadow-sm" />
 
             {groupEvents.map((event) => (
               <div key={event.id} className="relative">
-                {/* Node Icon - line goes through, z-10 puts it above line */}
+                {/* Node Icon - 增强玻璃态和发光效果，左侧留出空间显示完整阴影 */}
                 <div
                   className={cn(
-                    "absolute left-0 top-2 h-4 w-4 rounded-full z-10 flex items-center justify-center",
+                    "absolute left-1.5 top-2 h-4 w-4 rounded-full z-10 flex items-center justify-center transition-all duration-200",
                     event.type === "milestone"
-                      ? "bg-blue-500"
-                      : "bg-surface-100 dark:bg-surface-100/10",
+                      ? "bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-blue-300/50 shadow-[0_0_12px_rgba(59,130,246,0.6),0_0_4px_rgba(59,130,246,0.8)] dark:shadow-[0_0_16px_rgba(59,130,246,0.7),0_0_6px_rgba(59,130,246,0.9)]"
+                      : "bg-white/80 dark:bg-surface-100/30 border-2 border-border/60 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.1)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)]",
                   )}
                 >
                   {event.type === "milestone" && (
-                    <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                    <div className="h-1.5 w-1.5 rounded-full bg-white/90 shadow-sm" />
                   )}
                 </div>
 
                 {/* Content */}
-                <div className="pl-6 min-w-0">
+                <div className="pl-8 min-w-0">
                   {event.type === "milestone" && (
                     <div>
                       <div className="flex items-center gap-2 mb-4">

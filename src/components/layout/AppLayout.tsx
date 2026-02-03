@@ -28,28 +28,33 @@ const SidebarItem = ({
       "group w-full justify-start relative overflow-hidden rounded-lg text-[13px] transition-all duration-200",
       collapsed ? "px-2.5 justify-center" : "px-3",
       isActive
-        ? "bg-white/60 dark:bg-surface-100/25 text-foreground font-medium shadow-[0_1px_2px_rgba(0,0,0,0.05),inset_0_0_0_1px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(255,255,255,0.05)]"
+        ? "bg-white/80 dark:bg-surface-100/35 text-foreground font-semibold shadow-[0_2px_4px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)] border border-border/60 backdrop-blur-sm"
         : "text-muted-foreground font-normal hover:text-foreground hover:bg-white/40 dark:hover:bg-surface-100/15",
     )}
     onClick={onClick}
   >
-    {/* Active indicator */}
+    {/* Active indicator - 增强版 */}
     {isActive && (
-      <span
-        className={cn(
-          "absolute top-1/2 -translate-y-1/2 h-4 w-[2px] rounded-full bg-primary shadow-sm",
-          collapsed ? "left-1" : "left-1",
-        )}
-      />
+      <>
+        {/* 左侧主指示器 */}
+        <span
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.4)]",
+            collapsed ? "left-1" : "left-1",
+          )}
+        />
+        {/* 玻璃态高光层 */}
+        <span className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/0 to-transparent opacity-60" />
+      </>
     )}
     <Icon
       className={cn(
-        "h-[18px] w-[18px] transition-transform duration-200",
+        "h-[18px] w-[18px] transition-all duration-200 relative z-10",
         collapsed ? "" : "mr-2.5",
-        !isActive && "group-hover:scale-105",
+        isActive ? "text-primary scale-105" : "group-hover:scale-105",
       )}
     />
-    {!collapsed && <span className="truncate">{label}</span>}
+    {!collapsed && <span className="truncate relative z-10">{label}</span>}
   </Button>
 );
 

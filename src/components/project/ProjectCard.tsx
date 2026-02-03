@@ -254,7 +254,7 @@ export function ProjectCard({
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <span
                 className={cn(
-                  "h-2 w-2 rounded-full shrink-0",
+                  "h-2 w-2 rounded-full shrink-0 ml-0.5",
                   statusDotColors[
                     project.status === "pinned" ? "pinned" : project.status
                   ],
@@ -402,7 +402,7 @@ export function ProjectCard({
               <div className="flex items-center gap-2 mb-2">
                 <span
                   className={cn(
-                    "h-2 w-2 rounded-full",
+                    "h-2 w-2 rounded-full shrink-0 ml-0.5",
                     statusDotColors[
                       project.status === "pinned" ? "pinned" : project.status
                     ],
