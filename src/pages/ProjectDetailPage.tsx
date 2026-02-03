@@ -5,6 +5,34 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TimelineView, TimelineEvent } from "@/components/project/TimelineView";
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+
+// CountBadge component matching ProjectsPage style
+function CountBadge({
+  count,
+  variant = "default",
+  className,
+}: {
+  count: number;
+  variant?: "default" | "muted";
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium",
+        variant === "default"
+          ? "bg-primary/10 text-primary"
+          : "bg-muted/50 text-muted-foreground",
+        className,
+      )}
+    >
+      {count}
+    </span>
+  );
+}
 
 interface ProjectDetails {
   id: number;
@@ -67,104 +95,143 @@ export function ProjectDetailPage() {
 
   if (error) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center h-full text-red-500">
-        <h2 className="text-xl font-bold mb-2">Error Loading Project</h2>
-        <p>{error}</p>
-        <Button onClick={() => navigate(-1)} className="mt-4">
-          Go Back
-        </Button>
-      </div>
+      <PageContainer className="p-6 bg-muted/30">
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="h-12 w-12 rounded-xl bg-destructive/10 flex items-center justify-center mb-4">
+            <ArrowLeft className="h-6 w-6 text-destructive/60" />
+          </div>
+          <h3 className="text-sm font-medium text-foreground/80">
+            Error Loading Project
+          </h3>
+          <p className="text-xs text-muted-foreground/60 mt-1 max-w-xs">
+            {error}
+          </p>
+          <Button size="sm" className="mt-4" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4 mr-1.5" />
+            Go Back
+          </Button>
+        </div>
+      </PageContainer>
     );
   }
 
   if (!project) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <PageContainer className="p-6 bg-muted/30">
+        <div className="text-sm text-muted-foreground/80">Loading...</div>
+      </PageContainer>
+    );
   }
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <PageContainer className="p-6 bg-muted/30">
       {/* Header */}
-      <div className="flex items-center gap-4 p-4 border-b bg-card">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-xl font-semibold">{project.title}</h1>
-          <p className="text-xs text-muted-foreground">
-            Last updated {project.last_updated}
-          </p>
-        </div>
-        <div className="ml-auto flex gap-2">
-          <Button variant="outline" size="sm">
-            <Search className="h-4 w-4 mr-2" />
-            Search Project
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="h-8 w-8"
+          >
+            <ArrowLeft className="h-4 w-4" />
           </Button>
+          <div className="space-y-0.5">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">
+              {project.title}
+            </h1>
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground/55 leading-tight">
+              <span>last updated {project.last_updated}</span>
+              <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+              <span>events</span>
+              <CountBadge
+                count={events.length}
+                variant="muted"
+                className="text-[10px]"
+              />
+              <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+              <span>artifacts</span>
+              <CountBadge
+                count={artifacts.length}
+                variant="muted"
+                className="text-[10px]"
+              />
+            </div>
+          </div>
         </div>
+        <Button variant="outline" size="sm">
+          <Search className="h-4 w-4 mr-2" />
+          Search Project
+        </Button>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-        <Tabs defaultValue="timeline" className="flex-1 flex flex-col min-h-0">
-          <div className="px-4 pt-2 border-b">
-            <TabsList>
-              <TabsTrigger value="timeline" className="flex gap-2">
-                <Calendar className="h-4 w-4" />
-                Timeline
-              </TabsTrigger>
-              <TabsTrigger value="artifacts" className="flex gap-2">
-                <Files className="h-4 w-4" />
-                Artifacts Library ({artifacts.length})
-              </TabsTrigger>
-            </TabsList>
-          </div>
+      {/* Content */}
+      <Tabs defaultValue="timeline" className="flex-1 flex flex-col min-h-0">
+        <TabsList className="mb-6">
+          <TabsTrigger value="timeline" className="flex gap-2">
+            <Calendar className="h-4 w-4" />
+            Timeline
+          </TabsTrigger>
+          <TabsTrigger value="artifacts" className="flex gap-2">
+            <Files className="h-4 w-4" />
+            Artifacts Library
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent
-            value="timeline"
-            className="flex-1 overflow-auto p-6 min-h-0"
-          >
-            <div className="max-w-3xl mx-auto">
+        <TabsContent value="timeline" className="flex-1 min-h-0 mt-0">
+          <ScrollArea className="flex-1 -mx-6 px-6">
+            <div className="max-w-3xl pb-10">
               <TimelineView events={events} />
             </div>
-          </TabsContent>
+          </ScrollArea>
+        </TabsContent>
 
-          <TabsContent
-            value="artifacts"
-            className="flex-1 overflow-auto p-6 min-h-0"
-          >
-            {artifacts.length === 0 ? (
-              <div className="text-center text-muted-foreground mt-10">
-                No artifacts found in project #{projectId}.
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {artifacts.map((a) => (
-                  <div
-                    key={a.id}
-                    className="border bg-card p-4 rounded-md flex flex-col items-center hover:shadow-md transition-all cursor-pointer"
-                  >
-                    <div className="text-3xl mb-3 text-blue-500">
-                      {a.file_type === "pdf"
-                        ? "📄"
-                        : a.file_type === "docx"
-                          ? "📝"
-                          : "📁"}
-                    </div>
-                    <div
-                      className="font-medium truncate w-full text-center text-sm"
-                      title={a.filename}
-                    >
-                      {a.filename}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {(a.file_size / 1024).toFixed(0)} KB
-                    </div>
+        <TabsContent value="artifacts" className="flex-1 min-h-0 mt-0">
+          <ScrollArea className="flex-1 -mx-6 px-6">
+            <div className="pb-10">
+              {artifacts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="h-12 w-12 rounded-xl bg-surface-100 dark:bg-surface-100/10 flex items-center justify-center mb-4">
+                    <Files className="h-6 w-6 text-muted-foreground/40" />
                   </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+                  <h3 className="text-sm font-medium text-foreground/80">
+                    No artifacts yet
+                  </h3>
+                  <p className="text-xs text-muted-foreground/60 mt-1 max-w-xs">
+                    No artifacts found in this project.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {artifacts.map((a) => (
+                    <div
+                      key={a.id}
+                      className="border border-border/40 bg-card p-4 rounded-lg flex flex-col items-center hover:shadow-md hover:border-border transition-all cursor-pointer"
+                    >
+                      <div className="text-3xl mb-3 text-blue-500">
+                        {a.file_type === "pdf"
+                          ? "📄"
+                          : a.file_type === "docx"
+                            ? "📝"
+                            : "📁"}
+                      </div>
+                      <div
+                        className="font-medium truncate w-full text-center text-sm"
+                        title={a.filename}
+                      >
+                        {a.filename}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {(a.file_size / 1024).toFixed(0)} KB
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
+    </PageContainer>
   );
 }

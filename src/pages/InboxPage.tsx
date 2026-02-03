@@ -32,6 +32,31 @@ import {
 import { cn } from "@/lib/utils";
 import { PageContainer } from "@/components/layout/PageContainer";
 
+// CountBadge component matching ProjectsPage style
+function CountBadge({
+  count,
+  variant = "default",
+  className,
+}: {
+  count: number;
+  variant?: "default" | "muted";
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium",
+        variant === "default"
+          ? "bg-primary/10 text-primary"
+          : "bg-muted/50 text-muted-foreground",
+        className,
+      )}
+    >
+      {count}
+    </span>
+  );
+}
+
 interface EmailPreview {
   id: number;
   subject: string;
@@ -119,19 +144,27 @@ export function InboxPage() {
   };
 
   return (
-    <PageContainer className="p-6 gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-surface-100 dark:bg-surface-100/10 flex items-center justify-center">
-            <InboxIcon className="h-5 w-5" />
-          </div>
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Inbox
-            </h1>
-            <p className="text-sm text-muted-foreground/80">
-              {emails.length} messages, {attachmentsCount} with attachments
-            </p>
+    <PageContainer className="p-6 bg-muted/30">
+      {/* Header */}
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+        <div className="space-y-0.5">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground leading-tight">
+            Inbox
+          </h1>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground/55 leading-tight">
+            <span>messages</span>
+            <CountBadge
+              count={emails.length}
+              variant="muted"
+              className="text-[10px]"
+            />
+            <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+            <span>with attachments</span>
+            <CountBadge
+              count={attachmentsCount}
+              variant="muted"
+              className="text-[10px]"
+            />
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -146,6 +179,7 @@ export function InboxPage() {
         </div>
       </div>
 
+      {/* Content */}
       <div className="flex-1 min-h-0 grid gap-4 lg:grid-cols-[320px_1fr]">
         <Card className="flex flex-col min-h-0">
           <CardHeader className="pb-3">
@@ -213,7 +247,8 @@ export function InboxPage() {
                         "group w-full text-left px-4 py-3 border-b border-l-2 border-transparent transition-all duration-150",
                         "hover:bg-surface-50 dark:hover:bg-surface-100/10",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0",
-                        isActive && "bg-surface-100/50 dark:bg-surface-100/20 border-l-primary",
+                        isActive &&
+                          "bg-surface-100/50 dark:bg-surface-100/20 border-l-primary",
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
