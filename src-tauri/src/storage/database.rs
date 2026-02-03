@@ -41,6 +41,7 @@ pub fn init(app: &AppHandle) -> Result<()> {
             is_pinned BOOLEAN DEFAULT 0,
             email_count INTEGER DEFAULT 0,
             attachment_count INTEGER DEFAULT 0,
+            tags TEXT,  -- JSON array of tags
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );

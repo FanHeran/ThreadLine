@@ -18,6 +18,12 @@ interface BackendProject {
     emails: number;
     attachments: number;
   };
+  tags?: string[];
+  last_activity?: {
+    sender: string;
+    date: string;
+  };
+  participants?: string[];
 }
 
 export function ArtifactsPage() {
@@ -37,6 +43,9 @@ export function ArtifactsPage() {
           status: p.is_pinned ? "pinned" : (p.status as ProjectData["status"]),
           lastUpdated: p.last_updated,
           stats: p.stats,
+          tags: p.tags,
+          lastActivity: p.last_activity,
+          participants: p.participants,
         }));
         setProjects(mapped);
       } catch (e: any) {
@@ -47,9 +56,7 @@ export function ArtifactsPage() {
     fetchProjects();
   }, []);
 
-  const projectsWithArtifacts = projects.filter(
-    (p) => p.stats.attachments > 0,
-  );
+  const projectsWithArtifacts = projects.filter((p) => p.stats.attachments > 0);
 
   const handleProjectClick = (id: string) => {
     navigate(`/projects/${id}`);

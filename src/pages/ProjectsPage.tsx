@@ -1,5 +1,13 @@
 ﻿import { useEffect, useState } from "react";
-import { Plus, Archive, Pin, CirclePlay, ChevronDown, LayoutGrid, List } from "lucide-react";
+import {
+  Plus,
+  Archive,
+  Pin,
+  CirclePlay,
+  ChevronDown,
+  LayoutGrid,
+  List,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,10 +29,20 @@ interface BackendProject {
     emails: number;
     attachments: number;
   };
+  tags?: string[];
+  last_activity?: {
+    sender: string;
+    date: string;
+  };
+  participants?: string[];
 }
 
 // 骨架屏绁E��
-function ProjectCardSkeleton({ viewMode = "grid" }: { viewMode?: "grid" | "list" }) {
+function ProjectCardSkeleton({
+  viewMode = "grid",
+}: {
+  viewMode?: "grid" | "list";
+}) {
   if (viewMode === "list") {
     return (
       <Card className="overflow-hidden border-border/40">
@@ -104,7 +122,7 @@ function CountBadge({
         variant === "default"
           ? "bg-primary/10 text-primary"
           : "bg-muted/50 text-muted-foreground",
-        className
+        className,
       )}
     >
       {count}
@@ -117,7 +135,9 @@ export function ProjectsPage() {
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
+    new Set(),
+  );
 
   useEffect(() => {
     async function fetchProjects() {
@@ -127,9 +147,14 @@ export function ProjectsPage() {
           id: p.id.toString(),
           title: p.title,
           description: p.description,
-          status: p.is_pinned ? "pinned" : (p.status as "active" | "archived" | "pinned"),
+          status: p.is_pinned
+            ? "pinned"
+            : (p.status as "active" | "archived" | "pinned"),
           lastUpdated: p.last_updated,
           stats: p.stats,
+          tags: p.tags,
+          lastActivity: p.last_activity,
+          participants: p.participants,
         }));
         setProjects(mapped);
       } catch (e) {
@@ -161,21 +186,21 @@ export function ProjectsPage() {
     });
   };
 
-  const isSectionCollapsed = (section: string) => collapsedSections.has(section);
+  const isSectionCollapsed = (section: string) =>
+    collapsedSections.has(section);
 
   // 骨架屏占佁E
   const SkeletonSection = ({ count = 3 }: { count?: number }) => (
-    <div className={cn(
-      "gap-3",
-      viewMode === "grid"
-        ? "grid auto-rows-max grid-cols-[repeat(auto-fit,minmax(260px,360px))] justify-start"
-        : "flex flex-col"
-    )}>
+    <div
+      className={cn(
+        "gap-3",
+        viewMode === "grid"
+          ? "grid auto-rows-max grid-cols-[repeat(auto-fit,minmax(260px,360px))] justify-start"
+          : "flex flex-col",
+      )}
+    >
       {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="w-full"
-        >
+        <div key={i} className="w-full">
           <ProjectCardSkeleton viewMode={viewMode} />
         </div>
       ))}
@@ -215,11 +240,15 @@ export function ProjectsPage() {
           <h2 className="text-sm font-semibold text-foreground/75 tracking-wide">
             {title}
           </h2>
-          <CountBadge count={projects.length} variant={badgeVariant} className="text-[10px] opacity-70" />
+          <CountBadge
+            count={projects.length}
+            variant={badgeVariant}
+            className="text-[10px] opacity-70"
+          />
           <ChevronDown
             className={cn(
               "h-3.5 w-3.5 text-muted-foreground/40 transition-transform duration-200",
-              collapsed && "-rotate-90"
+              collapsed && "-rotate-90",
             )}
           />
         </button>
@@ -229,14 +258,11 @@ export function ProjectsPage() {
               "gap-3",
               viewMode === "grid"
                 ? "grid auto-rows-max grid-cols-[repeat(auto-fit,minmax(260px,360px))] justify-start"
-                : "flex flex-col"
+                : "flex flex-col",
             )}
           >
             {projects.map((p) => (
-              <div
-                key={p.id}
-                className="w-full"
-              >
+              <div key={p.id} className="w-full">
                 <ProjectCard
                   project={p}
                   onClick={handleProjectClick}
@@ -260,10 +286,18 @@ export function ProjectsPage() {
           </h1>
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground/55 leading-tight">
             <span>projects</span>
-            <CountBadge count={projects.length} variant="muted" className="text-[10px]" />
+            <CountBadge
+              count={projects.length}
+              variant="muted"
+              className="text-[10px]"
+            />
             <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
             <span>active</span>
-            <CountBadge count={activeProjects.length} variant="muted" className="text-[10px]" />
+            <CountBadge
+              count={activeProjects.length}
+              variant="muted"
+              className="text-[10px]"
+            />
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -275,7 +309,7 @@ export function ProjectsPage() {
                 "p-1.5 transition-colors",
                 viewMode === "grid"
                   ? "bg-muted/50 text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
               )}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -286,7 +320,7 @@ export function ProjectsPage() {
                 "p-1.5 transition-colors",
                 viewMode === "list"
                   ? "bg-muted/50 text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
               )}
             >
               <List className="h-4 w-4" />
@@ -367,9 +401,12 @@ export function ProjectsPage() {
                   <div className="h-12 w-12 rounded-xl bg-surface-100 dark:bg-surface-100/10 flex items-center justify-center mb-4">
                     <Archive className="h-6 w-6 text-muted-foreground/40" />
                   </div>
-                  <h3 className="text-sm font-medium text-foreground/80">No projects yet</h3>
+                  <h3 className="text-sm font-medium text-foreground/80">
+                    No projects yet
+                  </h3>
                   <p className="text-xs text-muted-foreground/60 mt-1 max-w-xs">
-                    Create your first project to start organizing emails and attachments.
+                    Create your first project to start organizing emails and
+                    attachments.
                   </p>
                   <Button size="sm" className="mt-4">
                     <Plus className="h-4 w-4 mr-1.5" />
@@ -384,9 +421,3 @@ export function ProjectsPage() {
     </PageContainer>
   );
 }
-
-
-
-
-
-

@@ -13,6 +13,15 @@ pub struct Project {
     pub is_pinned: bool,
     pub last_updated: String, // DB 'updated_at'
     pub stats: ProjectStats,
+    pub tags: Option<Vec<String>>,
+    pub last_activity: Option<LastActivity>,
+    pub participants: Option<Vec<String>>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LastActivity {
+    pub sender: String,
+    pub date: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -38,6 +47,14 @@ pub struct MilestoneEvent {
     pub children: Vec<TimelineEvent>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Attachment {
+    pub name: String,
+    #[serde(rename = "type")]
+    pub file_type: String,
+    pub size: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EmailEvent {
     pub id: String,
@@ -45,7 +62,7 @@ pub struct EmailEvent {
     pub sender: String,
     pub content: String,
     pub subject: String,
-    // pub attachments: Vec<Attachment>, // skipping for now or use placeholder
+    pub attachments: Option<Vec<Attachment>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
