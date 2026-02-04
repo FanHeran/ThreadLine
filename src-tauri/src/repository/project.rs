@@ -332,6 +332,57 @@ impl ProjectRepository {
             Ok(attachments)
         }
     }
+
+    /// 切换项目置顶状态
+    pub async fn toggle_pin(&self, id: i64) -> Result<bool, AppError> {
+        // 获取当前状态
+        let current: (bool,) = sqlx::query_as(
+            "SELECT is_pinned FROM projects WHERE id = ?"
+        )
+        .bind(id)
+        .fetch_one(&self.pool)
+        .await?;
+
+        let new_state = !current.0;
+
+        // 更新状态
+        sqlx::query(
+            "UPDATE projects SET is_pinned = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+        )
+        .bind(new_state)
+        .bind(id)
+        .execute(&self.pool)
+        .await?;
+
+        log::info!("Project {} pin state changed to: {}", id, new_state);
+        Ok(new_state)
+    }
+
+    /// 归档项目
+    pub async fn archive(&self, id: i64) -> Result<(), AppError> {
+        sqlx::query(
+            "UPDATE projects SET status = 'archived', updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+        )
+        .bind(id)
+        .execute(&self.pool)
+        .await?;
+
+        log::info!("Project {} archived", id);
+        Ok(())
+    }
+
+    /// 取消归档项目
+    pub async fn unarchive(&self, id: i64) -> Result<(), AppError> {
+        sqlx::query(
+            "UPDATE projects SET status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+        )
+        .bind(id)
+        .execute(&self.pool)
+        .await?;
+
+        log::info!("Project {} unarchived", id);
+        Ok(())
+    }
 }
 
 // 辅助结构体

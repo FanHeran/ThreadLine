@@ -21,10 +21,10 @@ pub async fn seed_mock_data(app: &AppHandle) -> anyhow::Result<()> {
 
     log::info!("Seeding mock data...");
 
-    // 1. Insert Accounts
-    sqlx::query("INSERT INTO accounts (id, email, provider) VALUES (1, 'me@example.com', 'gmail')")
-        .execute(&pool)
-        .await?;
+    // 1. Insert Accounts (注释掉，使用真实的 OAuth 账户)
+    // sqlx::query("INSERT INTO accounts (id, email, provider) VALUES (1, 'me@example.com', 'gmail')")
+    //     .execute(&pool)
+    //     .await?;
 
     // 2. Insert Projects with tags
     sqlx::query(

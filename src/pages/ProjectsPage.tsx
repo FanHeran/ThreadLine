@@ -139,30 +139,31 @@ export function ProjectsPage() {
     new Set(),
   );
 
-  useEffect(() => {
-    async function fetchProjects() {
-      try {
-        const data = await invoke<BackendProject[]>("list_projects");
-        const mapped: ProjectData[] = data.map((p) => ({
-          id: p.id.toString(),
-          title: p.title,
-          description: p.description,
-          status: p.is_pinned
-            ? "pinned"
-            : (p.status as "active" | "archived" | "pinned"),
-          lastUpdated: p.last_updated,
-          stats: p.stats,
-          tags: p.tags,
-          lastActivity: p.last_activity,
-          participants: p.participants,
-        }));
-        setProjects(mapped);
-      } catch (e) {
-        console.error("Failed to fetch projects:", e);
-      } finally {
-        setLoading(false);
-      }
+  const fetchProjects = async () => {
+    try {
+      const data = await invoke<BackendProject[]>("list_projects");
+      const mapped: ProjectData[] = data.map((p) => ({
+        id: p.id.toString(),
+        title: p.title,
+        description: p.description,
+        status: p.is_pinned
+          ? "pinned"
+          : (p.status as "active" | "archived" | "pinned"),
+        lastUpdated: p.last_updated,
+        stats: p.stats,
+        tags: p.tags,
+        lastActivity: p.last_activity,
+        participants: p.participants,
+      }));
+      setProjects(mapped);
+    } catch (e) {
+      console.error("Failed to fetch projects:", e);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchProjects();
   }, []);
 
@@ -266,6 +267,7 @@ export function ProjectsPage() {
                 <ProjectCard
                   project={p}
                   onClick={handleProjectClick}
+                  onUpdate={fetchProjects}
                   viewMode={viewMode}
                 />
               </div>

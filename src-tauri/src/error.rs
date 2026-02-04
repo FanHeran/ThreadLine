@@ -28,6 +28,10 @@ pub enum AppError {
     #[error("Network error: {0}")]
     Network(String),
 
+    /// 认证错误
+    #[error("Authentication error: {0}")]
+    Auth(String),
+
     /// IMAP 错误
     #[error("IMAP error: {0}")]
     Imap(String),
@@ -90,6 +94,16 @@ impl From<AppError> for ErrorResponse {
                 message: e.to_string(),
                 details: None,
             },
+            AppError::Network(e) => ErrorResponse {
+                code: "NET_ERROR".to_string(),
+                message: e.clone(),
+                details: None,
+            },
+            AppError::Auth(e) => ErrorResponse {
+                code: "AUTH_ERROR".to_string(),
+                message: e.clone(),
+                details: None,
+            },
             AppError::ProjectNotFound { id } => ErrorResponse {
                 code: "PROJECT_NOT_FOUND".to_string(),
                 message: format!("Project with id {} not found", id),
@@ -104,11 +118,6 @@ impl From<AppError> for ErrorResponse {
                 code: "ATTACHMENT_NOT_FOUND".to_string(),
                 message: format!("Attachment with id {} not found", id),
                 details: Some(serde_json::json!({ "attachment_id": id })),
-            },
-            AppError::Network(msg) => ErrorResponse {
-                code: "NET_ERROR".to_string(),
-                message: msg,
-                details: None,
             },
             AppError::Imap(msg) => ErrorResponse {
                 code: "NET_IMAP_ERROR".to_string(),

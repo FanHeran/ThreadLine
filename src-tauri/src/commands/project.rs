@@ -35,3 +35,36 @@ pub async fn get_project_timeline(
         .map_err(Into::into)
 }
 
+/// 置顶/取消置顶项目
+#[tauri::command]
+pub async fn toggle_project_pin(
+    repo: State<'_, ProjectRepository>,
+    id: i64,
+) -> Result<bool, ErrorResponse> {
+    repo.toggle_pin(id)
+        .await
+        .map_err(Into::into)
+}
+
+/// 归档项目
+#[tauri::command]
+pub async fn archive_project(
+    repo: State<'_, ProjectRepository>,
+    id: i64,
+) -> Result<(), ErrorResponse> {
+    repo.archive(id)
+        .await
+        .map_err(Into::into)
+}
+
+/// 取消归档项目
+#[tauri::command]
+pub async fn unarchive_project(
+    repo: State<'_, ProjectRepository>,
+    id: i64,
+) -> Result<(), ErrorResponse> {
+    repo.unarchive(id)
+        .await
+        .map_err(Into::into)
+}
+

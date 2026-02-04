@@ -57,28 +57,29 @@ export function ArtifactsPage() {
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProjects() {
-      try {
-        setError(null);
-        const data = await invoke<BackendProject[]>("list_projects");
-        const mapped: ProjectData[] = data.map((p) => ({
-          id: p.id.toString(),
-          title: p.title,
-          description: p.description,
-          status: p.is_pinned ? "pinned" : (p.status as ProjectData["status"]),
-          lastUpdated: p.last_updated,
-          stats: p.stats,
-          tags: p.tags,
-          lastActivity: p.last_activity,
-          participants: p.participants,
-        }));
-        setProjects(mapped);
-      } catch (e: any) {
-        console.error("Failed to fetch projects:", e);
-        setError(e.toString());
-      }
+  const fetchProjects = async () => {
+    try {
+      setError(null);
+      const data = await invoke<BackendProject[]>("list_projects");
+      const mapped: ProjectData[] = data.map((p) => ({
+        id: p.id.toString(),
+        title: p.title,
+        description: p.description,
+        status: p.is_pinned ? "pinned" : (p.status as ProjectData["status"]),
+        lastUpdated: p.last_updated,
+        stats: p.stats,
+        tags: p.tags,
+        lastActivity: p.last_activity,
+        participants: p.participants,
+      }));
+      setProjects(mapped);
+    } catch (e: any) {
+      console.error("Failed to fetch projects:", e);
+      setError(e.toString());
     }
+  };
+
+  useEffect(() => {
     fetchProjects();
   }, []);
 
@@ -158,15 +159,16 @@ export function ArtifactsPage() {
             </div>
           ) : (
             <section>
-            <h2 className="text-sm font-semibold text-foreground/75 tracking-wide mb-4">
-              Projects with Artifacts
-            </h2>
+              <h2 className="text-sm font-semibold text-foreground/75 tracking-wide mb-4">
+                Projects with Artifacts
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-max gap-3">
                 {projectsWithArtifacts.map((p) => (
                   <div key={p.id} className="w-full">
                     <ProjectCard
                       project={p}
                       onClick={handleProjectClick}
+                      onUpdate={fetchProjects}
                       viewMode="grid"
                     />
                   </div>

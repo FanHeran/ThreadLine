@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables (contains sensitive OAuth credentials)
+.env
+**/.env
+
+# Keep example files
+!.env.example
+!**/.env.example

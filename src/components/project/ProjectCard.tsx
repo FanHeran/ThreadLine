@@ -30,6 +30,8 @@ import {
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils";
 import { AvatarGroup } from "@/components/ui/avatar-group";
+import { invoke } from "@tauri-apps/api/core";
+import { toast } from "sonner";
 
 export interface ProjectData {
   id: string;
@@ -54,6 +56,7 @@ export interface ProjectData {
 interface ProjectCardProps {
   project: ProjectData;
   onClick?: (id: string) => void;
+  onUpdate?: () => void; // 回调函数，用于刷新项目列表
   viewMode?: "grid" | "list";
 }
 
@@ -176,6 +179,7 @@ const ProgressRing = ({ value }: { value: number }) => {
 export function ProjectCard({
   project,
   onClick,
+  onUpdate,
   viewMode = "grid",
 }: ProjectCardProps) {
   const progress = getProgress(project);
@@ -183,15 +187,50 @@ export function ProjectCard({
     statusBadgeConfig[project.status === "pinned" ? "pinned" : project.status];
   const StatusIcon = statusConfig.icon;
 
-  const handleQuickAction = (e: React.MouseEvent, action: string) => {
+  const handleQuickAction = async (e: React.MouseEvent, action: string) => {
     e.stopPropagation();
-    console.log(`Quick action: ${action} for project ${project.id}`);
-    // TODO: 实现实际的快捷操作逻辑
+
+    try {
+      if (action === "pin" || action === "unpin") {
+        await invoke("toggle_project_pin", { id: parseInt(project.id) });
+        toast.success(action === "pin" ? "已置顶项目" : "已取消置顶");
+        onUpdate?.(); // 刷新项目列表
+      } else if (action === "archive") {
+        await invoke("archive_project", { id: parseInt(project.id) });
+        toast.success("已归档项目");
+        onUpdate?.();
+      }
+    } catch (error) {
+      console.error(`Failed to ${action} project:`, error);
+      toast.error(`操作失败: ${error}`);
+    }
   };
 
-  const handleContextMenuAction = (action: string) => {
-    console.log(`Context menu action: ${action} for project ${project.id}`);
-    // TODO: 实现实际的右键菜单操作逻辑
+  const handleContextMenuAction = async (action: string) => {
+    try {
+      if (action === "pin" || action === "unpin") {
+        await invoke("toggle_project_pin", { id: parseInt(project.id) });
+        toast.success(action === "pin" ? "已置顶项目" : "已取消置顶");
+        onUpdate?.();
+      } else if (action === "archive") {
+        if (project.status === "archived") {
+          await invoke("unarchive_project", { id: parseInt(project.id) });
+          toast.success("已取消归档");
+        } else {
+          await invoke("archive_project", { id: parseInt(project.id) });
+          toast.success("已归档项目");
+        }
+        onUpdate?.();
+      } else if (action === "open") {
+        onClick?.(project.id);
+      } else {
+        console.log(`Context menu action: ${action} for project ${project.id}`);
+        // TODO: 实现其他操作
+      }
+    } catch (error) {
+      console.error(`Failed to ${action} project:`, error);
+      toast.error(`操作失败: ${error}`);
+    }
   };
 
   // 右键菜单内容组件
@@ -224,7 +263,7 @@ export function ProjectCard({
         </ContextMenuItem>
         <ContextMenuItem onClick={() => handleContextMenuAction("archive")}>
           <Archive className="mr-2 h-4 w-4" />
-          <span>归档</span>
+          <span>{project.status === "archived" ? "取消归档" : "归档"}</span>
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem

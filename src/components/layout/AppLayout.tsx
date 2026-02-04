@@ -71,6 +71,8 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
       setActiveItem("projects");
     } else if (location.pathname.startsWith("/inbox")) {
       setActiveItem("inbox");
+    } else if (location.pathname.startsWith("/settings")) {
+      setActiveItem("settings");
     }
   }, [location.pathname]);
 
@@ -170,7 +172,10 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
             icon={Settings}
             label="Settings"
             isActive={activeItem === "settings"}
-            onClick={() => setActiveItem("settings")}
+            onClick={() => {
+              setActiveItem("settings");
+              navigate("/settings");
+            }}
             collapsed={collapsed}
           />
         </div>

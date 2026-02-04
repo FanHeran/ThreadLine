@@ -1,5 +1,6 @@
 pub mod commands;
 pub mod error;
+pub mod events;
 pub mod mail;
 pub mod project;
 pub mod repository;
@@ -32,11 +33,12 @@ pub fn run() {
             // 注册全局状态
             let project_repo = repository::ProjectRepository::new(pool.clone());
             app.manage(project_repo);
+            app.manage(pool.clone()); // 注册 SqlitePool 供 sync 命令使用
 
-            // 填充模拟数据
-            runtime.block_on(async {
-                storage::mock_data::seed_mock_data(app.handle()).await
-            })?;
+            // 填充模拟数据（暂时禁用，使用真实 OAuth 账户）
+            // runtime.block_on(async {
+            //     storage::mock_data::seed_mock_data(app.handle()).await
+            // })?;
 
             log::info!("Application initialized successfully");
             Ok(())
@@ -48,9 +50,22 @@ pub fn run() {
             commands::project::list_projects,
             commands::project::get_project,
             commands::project::get_project_timeline,
+            commands::project::toggle_project_pin,
+            commands::project::archive_project,
+            commands::project::unarchive_project,
             commands::search::search_query,
             commands::artifact::get_artifact,
-            commands::artifact::get_project_artifacts
+            commands::artifact::get_project_artifacts,
+            commands::sync::get_email_providers,
+            commands::sync::add_email_account,
+            commands::sync::add_oauth_email_account,
+            commands::sync::sync_email_account,
+            commands::sync::list_email_accounts,
+            commands::sync::reset_account_sync,
+            commands::oauth::start_oauth_flow,
+            commands::oauth::get_oauth_instructions,
+            commands::settings::get_sync_settings,
+            commands::settings::update_sync_settings
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
