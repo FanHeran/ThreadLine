@@ -379,7 +379,7 @@ export function ProjectCard({
     <ProjectContextMenu>
       <Card
         className={cn(
-          "group relative overflow-hidden transition-all duration-300 ease-out cursor-pointer",
+          "group relative overflow-hidden transition-all duration-300 ease-out cursor-pointer h-full flex flex-col",
           "border-border/60 shadow-[0_1px_2px_rgba(15,23,42,0.06)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.22)]",
           "hover:border-border hover:shadow-[0_8px_24px_rgba(15,23,42,0.15)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)]",
           "hover:-translate-y-1 hover:scale-[1.02]",
@@ -396,7 +396,7 @@ export function ProjectCard({
         }
         onClick={() => onClick?.(project.id)}
       >
-        <CardHeader className="pb-2 pt-5">
+        <CardHeader className="pb-2 pt-5 flex-shrink-0">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -485,19 +485,21 @@ export function ProjectCard({
           </div>
         </CardHeader>
 
-        <CardContent className="pt-0">
+        <CardContent className="pt-0 flex-1 flex flex-col">
           {/* 最新活动预览 */}
-          {project.lastActivity && (
-            <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground/70">
-              <User className="h-3 w-3" />
-              <span className="truncate">
-                最近来自：
-                <span className="font-medium text-foreground/70">
-                  {project.lastActivity.sender}
+          <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground/70 min-h-[20px]">
+            {project.lastActivity && (
+              <>
+                <User className="h-3 w-3" />
+                <span className="truncate">
+                  最近来自：
+                  <span className="font-medium text-foreground/70">
+                    {project.lastActivity.sender}
+                  </span>
                 </span>
-              </span>
-            </div>
-          )}
+              </>
+            )}
+          </div>
 
           <div className="flex items-center gap-4 pt-3 border-t border-border/40 mt-2">
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground/80">
@@ -524,14 +526,16 @@ export function ProjectCard({
           </div>
 
           {/* 参与者头像 */}
-          {project.participants && project.participants.length > 0 && (
-            <div className="flex items-center gap-2 pt-3 mt-3 border-t border-border/40">
-              <AvatarGroup names={project.participants} max={3} size="sm" />
-              <span className="text-xs text-muted-foreground/60">
-                {project.participants.length} 位参与者
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-2 pt-3 mt-3 border-t border-border/40 min-h-[44px]">
+            {project.participants && project.participants.length > 0 && (
+              <>
+                <AvatarGroup names={project.participants} max={3} size="sm" />
+                <span className="text-xs text-muted-foreground/60">
+                  {project.participants.length} 位参与者
+                </span>
+              </>
+            )}
+          </div>
         </CardContent>
       </Card>
     </ProjectContextMenu>
