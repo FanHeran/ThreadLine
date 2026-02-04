@@ -1,4 +1,4 @@
-use rusqlite::Connection;
+use sqlx::{SqlitePool, sqlite::SqlitePoolOptions};
 use std::fs;
 
 use tauri::{AppHandle, Manager};
@@ -6,21 +6,30 @@ use anyhow::Result;
 
 const DB_NAME: &str = "threadline.db";
 
-pub fn init(app: &AppHandle) -> Result<()> {
+/// 初始化数据库连接池
+pub async fn init_pool(app: &AppHandle) -> Result<SqlitePool> {
     let app_data_dir = app.path().app_data_dir()?;
-    
+
     if !app_data_dir.exists() {
         fs::create_dir_all(&app_data_dir)?;
     }
 
     let db_path = app_data_dir.join(DB_NAME);
-    let conn = Connection::open(db_path)?;
+    let db_url = format!("sqlite:{}", db_path.display());
+
+    // 创建连接池
+    let pool = SqlitePoolOptions::new()
+        .max_connections(5)
+        .connect(&db_url)
+        .await?;
 
     // Enable WAL mode for better concurrency
-    conn.execute_batch("PRAGMA journal_mode = WAL;")?;
+    sqlx::query("PRAGMA journal_mode = WAL;")
+        .execute(&pool)
+        .await?;
 
     // Create Tables
-    conn.execute_batch(
+    sqlx::query(
         r#"
         -- Accounts Table
         CREATE TABLE IF NOT EXISTS accounts (
@@ -102,8 +111,10 @@ pub fn init(app: &AppHandle) -> Result<()> {
             FOREIGN KEY (email_id) REFERENCES emails(id)
         );
         "#
-    )?;
+    )
+    .execute(&pool)
+    .await?;
 
-    println!("Database initialized successfully.");
-    Ok(())
+    log::info!("Database initialized successfully.");
+    Ok(pool)
 }

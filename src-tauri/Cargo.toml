@@ -33,7 +33,7 @@ mail-parser = "0.9"
 tantivy = "0.22"
 
 # Database
-rusqlite = { version = "0.31", features = ["bundled"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "sqlite"] }
 
 # Utilities
 lazy_static = "1.4"
