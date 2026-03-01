@@ -93,7 +93,7 @@ impl EmailSyncer {
     /// 获取账户的最后同步 UID
     async fn get_last_synced_uid(&self, account_id: i64) -> Result<u32, AppError> {
         let result: Option<(i64,)> = sqlx::query_as(
-            "SELECT MAX(CAST(raw_path AS INTEGER)) FROM emails WHERE account_id = ?"
+            "SELECT MAX(CAST(raw_path AS INTEGER)) FROM emails WHERE account_id = ? AND raw_path GLOB '[0-9]*'"
         )
         .bind(account_id)
         .fetch_optional(&self.pool)
@@ -126,47 +126,47 @@ impl EmailSyncer {
         let max_sync_count = self.get_max_sync_count().await.unwrap_or(100);
         let sync_all = max_sync_count >= 999999; // 999999 表示同步全部
 
-        // 5. 获取新邮件的 UID 列表（优化：只获取最新的邮件）
-        let range = if last_uid == 0 {
-            // 首次同步
-            if sync_all {
-                // 同步全部邮件
-                log::info!("Sync mode: ALL emails");
-                "1:*".to_string()
-            } else if total > max_sync_count {
-                // 只获取最新的 N 封邮件
-                // 如果邮箱有 10000 封，max_sync_count=100，则获取 9901:*
-                let start_uid = (total - max_sync_count) as u32 + 1;
-                log::info!("Sync mode: Latest {} emails (from UID {})", max_sync_count, start_uid);
-                format!("{}:*", start_uid)
+        // 5. 获取需要同步的 UID 列表
+        let uids = if last_uid == 0 {
+            // 首次同步：获取全部 UID 后截取最新的
+            log::info!("First sync. Fetching ALL UIDs to find the latest...");
+            let mut all_uids = conn.fetch_uids("1:*").await?;
+            all_uids.sort_unstable(); // 保证有序
+            
+            if !sync_all && all_uids.len() > max_sync_count {
+                // 只取最新的 max_sync_count 个 UID
+                log::info!("Sync mode: Latest {} emails out of {}", max_sync_count, all_uids.len());
+                let start_idx = all_uids.len() - max_sync_count;
+                all_uids[start_idx..].to_vec()
             } else {
-                // 邮箱总数少于限制，获取全部
-                log::info!("Sync mode: All {} emails (less than limit)", total);
-                "1:*".to_string()
+                log::info!("Sync mode: ALL emails ({})", all_uids.len());
+                all_uids
             }
         } else {
             // 增量同步：获取上次同步后的新邮件
             log::info!("Sync mode: Incremental from UID {}", last_uid + 1);
-            format!("{}:*", last_uid + 1)
+            let range = format!("{}:*", last_uid + 1);
+            let mut new_uids = conn.fetch_uids(&range).await?;
+            new_uids.sort_unstable();
+
+            // 过滤掉因为 "N:*" 语法可能带出的旧邮件（如果最高UID没变，也会返回上次的最后一条）
+            new_uids.retain(|&uid| uid > last_uid);
+            
+            if !sync_all && new_uids.len() > max_sync_count {
+                log::info!("Incremental sync found {} emails. Limiting to newest {}.", new_uids.len(), max_sync_count);
+                let start_idx = new_uids.len() - max_sync_count;
+                new_uids[start_idx..].to_vec()
+            } else {
+                new_uids
+            }
         };
 
-        log::info!("Fetching UIDs with range: {}", range);
-        let mut uids = conn.fetch_uids(&range).await?;
-        log::info!("Found {} new messages", uids.len());
+        log::info!("Found {} new messages to process", uids.len());
 
         // 调试：显示前 20 个 UID
         if uids.len() > 0 {
             let preview: Vec<u32> = uids.iter().take(20).copied().collect();
             log::debug!("First 20 UIDs: {:?}", preview);
-        }
-
-        // 6. 对于增量同步，如果新邮件超过限制且未设置同步全部，只取最新的
-        if !sync_all && last_uid > 0 && uids.len() > max_sync_count {
-            // 反转后取前 N 个，再反转回来（保持从旧到新的顺序）
-            uids.reverse();
-            uids.truncate(max_sync_count);
-            uids.reverse();
-            log::info!("Limited to {} newest messages", max_sync_count);
         }
 
         let uids_to_sync = uids;

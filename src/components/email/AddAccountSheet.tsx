@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Mail, Loader2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,54 +40,55 @@ export function AddAccountSheet({
     null,
   );
   const [oauthSheetOpen, setOAuthSheetOpen] = useState(false);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const handleEmailChange = async (value: string) => {
+  const handleEmailChange = (value: string) => {
     setEmail(value);
     setError(null);
 
-    // 检测邮箱服务商
-    if (value.includes("@")) {
-      const parts = value.split("@");
-      const domain = parts[1]?.toLowerCase().trim();
+    // 清除上一次的定时器
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
 
-      // 确保域名部分存在且包含点号（基本的邮箱格式验证）
-      if (!domain || !domain.includes(".") || domain.length < 3) {
-        setDetectedProvider(null);
-        return;
-      }
+    // 设置新的防抖定时器 (500ms)
+    debounceTimer.current = setTimeout(async () => {
+      // 检测邮箱服务商
+      if (value.includes("@")) {
+        const parts = value.split("@");
+        const domain = parts[1]?.toLowerCase().trim();
+        const domainParts = domain?.split(".") || [];
+        const tld = domainParts[domainParts.length - 1];
 
-      try {
-        const providers = await invoke<Provider[]>("get_email_providers");
-        const domainPrefix = domain.split(".")[0];
-
-        // 确保域名前缀不为空
-        if (!domainPrefix) {
+        // 确保域名部分存在，包含点号，且顶级域名(如 .com)至少包含2个字符
+        if (!domain || !domain.includes(".") || domain.length < 3 || !tld || tld.length < 2) {
           setDetectedProvider(null);
           return;
         }
 
-        const provider = providers.find((p) =>
-          p.name.toLowerCase().includes(domainPrefix),
-        );
-        setDetectedProvider(provider || null);
+        try {
+          const providers = await invoke<Provider[]>("get_email_providers");
+          const domainPrefix = domain.split(".")[0];
 
-        // 如果是 Gmail 或 Outlook，自动打开 OAuth 对话框
-        if (
-          provider?.supports_oauth &&
-          (provider.name.toLowerCase().includes("gmail") ||
-            provider.name.toLowerCase().includes("outlook"))
-        ) {
-          // 延迟一下，让用户看到检测到的提供商
-          setTimeout(() => {
-            setOAuthSheetOpen(true);
-          }, 500);
+          // 确保域名前缀不为空
+          if (!domainPrefix) {
+            setDetectedProvider(null);
+            return;
+          }
+
+          const provider = providers.find((p) =>
+            p.name.toLowerCase().includes(domainPrefix),
+          );
+          setDetectedProvider(provider || null);
+          
+          // 注意：此处移除了之前的自动打开 OAuth 对话框逻辑，要求用户主动点击
+        } catch (err) {
+          console.error("Failed to detect provider:", err);
         }
-      } catch (err) {
-        console.error("Failed to detect provider:", err);
+      } else {
+        setDetectedProvider(null);
       }
-    } else {
-      setDetectedProvider(null);
-    }
+    }, 500);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

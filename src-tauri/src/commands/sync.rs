@@ -66,18 +66,7 @@ pub async fn reset_account_sync(
         details: None,
     })?.0;
 
-    // 2. 删除该账户的所有邮件
-    sqlx::query("DELETE FROM emails WHERE account_id = ?")
-        .bind(account_id)
-        .execute(pool.inner())
-        .await
-        .map_err(|e| ErrorResponse {
-            code: "DB_ERROR".to_string(),
-            message: format!("Failed to delete emails: {}", e),
-            details: None,
-        })?;
-
-    // 3. 删除该账户的所有项目
+    // 2. 删除该账户的所有项目 (必须在删除邮件之前进行，因为要依据 emails.project_id 查询)
     sqlx::query("DELETE FROM projects WHERE id IN (SELECT DISTINCT project_id FROM emails WHERE account_id = ?)")
         .bind(account_id)
         .execute(pool.inner())
@@ -85,6 +74,17 @@ pub async fn reset_account_sync(
         .map_err(|e| ErrorResponse {
             code: "DB_ERROR".to_string(),
             message: format!("Failed to delete projects: {}", e),
+            details: None,
+        })?;
+
+    // 3. 删除该账户的所有邮件
+    sqlx::query("DELETE FROM emails WHERE account_id = ?")
+        .bind(account_id)
+        .execute(pool.inner())
+        .await
+        .map_err(|e| ErrorResponse {
+            code: "DB_ERROR".to_string(),
+            message: format!("Failed to delete emails: {}", e),
             details: None,
         })?;
 
